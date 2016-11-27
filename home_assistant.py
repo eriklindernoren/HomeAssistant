@@ -16,7 +16,7 @@ class Alfred(object):
     def __init__(self):
         self.nlg = NLG(user_name=NAME)
         self.user_data = UserData(weather_api_token=DARKSKY_TOKEN)
-        self.audio_handler = AudioHandler(energy_threshold=50, debug=True)
+        self.audio_handler = AudioHandler(debug=True)
         self.session_id = 'session_id'
         self.context = {}
 
@@ -75,6 +75,7 @@ class Alfred(object):
 
         encoded_date_obj = datetime.datetime.strptime(time.split('.')[0], '%Y-%m-%dT%H:%M:%S')
 
+        self.audio_handler.speak("Let me look that up for you...")
         weather_obj = self.user_data.find_weather(time_query, loc)
 
         temperature = weather_obj['temperature']
