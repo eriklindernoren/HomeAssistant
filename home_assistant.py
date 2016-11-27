@@ -3,6 +3,7 @@ from wit import Wit
 from os import system
 from user_data import UserData
 from audio_handler import AudioHandler
+from nlg import NLG
 
 
 WIT_TOKEN = os.environ['WIT_TOKEN']
@@ -13,9 +14,9 @@ NAME = "Erik"
 
 class Alfred(object):
     def __init__(self):
-        # self.nlg = NLG(user_name=name)
+        self.nlg = NLG(user_name=NAME)
         self.user_data = UserData(weather_api_token=DARKSKY_TOKEN)
-        self.audio_handler = AudioHandler(energy_threshold=50)
+        self.audio_handler = AudioHandler(energy_threshold=50, debug=True)
         self.session_id = 'session_id'
         self.context = {}
 
@@ -65,23 +66,20 @@ class Alfred(object):
         entities = request['entities']
 
         loc = self._first_entity_value(entities, 'location')
-        if loc:
-            context['forecast'] = 'sunny'
-            if context.get('missingLocation') is not None:
-                del context['missingLocation']
-        else:
+        time = self._first_entity_value(entities, 'datetime')
+        if not time:
+            time = datetime.datetime.now()
 
-            current_dtime = datetime.datetime.now()
+        time_query = str(time).split('.')[0].replace(' ', 'T')    # Remove timezone
 
-            user_data.find_weather()
 
-            temperature = weather_obj['temperature']
-            icon = weather_obj['icon']
-            wind_speed = weather_obj['windSpeed']
+        encoded_date_obj = datetime.datetime.strptime(time.split('.')[0], '%Y-%m-%dT%H:%M:%S')
 
-            context['missingLocation'] = True
-            if context.get('forecast') is not None:
-                del context['forecast']
+        weather_obj = self.user_data.find_weather(time_query, loc)
+
+        temperature = weather_obj['temperature']
+
+        context['forecast'] = self.nlg.weather(temperature, encoded_date_obj, "present")
 
         return context
 
@@ -89,6 +87,11 @@ class Alfred(object):
         context = request['context']
         del context['active']
         return context
+
+    def _close(self, signal, frame):
+        self.nlg.close()
+        print
+        sys.exit(0)
 
     # --------
     # START BOT
@@ -105,9 +108,11 @@ class Alfred(object):
         self.client = Wit(access_token=WIT_TOKEN, actions=self.actions)
 
         signal.signal(signal.SIGALRM, self._active_timeout)
+        signal.signal(signal.SIGINT, self._close)
 
         while 1:
             try:
+                # 20 second timeout before bot goes to passive listening
                 if 'active' in self.context:
                     signal.alarm(20)
                 input_text = self.audio_handler.get_audio_as_text()
@@ -116,7 +121,7 @@ class Alfred(object):
                     signal.alarm(0)
                     self._converse(self.context, input_text)
             except Exception as e:
-                print("Google Speech Recognition could not understand audio")
+                print("Exception caught.")
 
 
 if __name__ == "__main__":

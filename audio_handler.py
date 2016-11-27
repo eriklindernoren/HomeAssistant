@@ -1,5 +1,7 @@
 import speech_recognition as sr
 from os import system
+
+
 class AudioHandler(object):
 	def __init__(self, energy_threshold, debug=True):
 		self.mic = sr.Microphone()
@@ -8,9 +10,9 @@ class AudioHandler(object):
 		self.debug = debug
 
 	def speak(self, message):
-		if debug:
-			print 'Alfred:', message
-		system('say -v Fred ' + message)
+		if self.debug:
+			print "Alfred: '" + message + "'"
+		system("say -v Fred '" + message + "'")
 
 	def get_audio_as_text(self):
 		with self.mic as source:
@@ -18,6 +20,6 @@ class AudioHandler(object):
 			audio = self.recognizer.listen(source)
 			text_message = self.recognizer.recognize_google(audio)
 			# text_message = self.recognizer.recognize_wit(audio, key=access_token) 
-			if debug:
-				print 'You:', text_message
+			if self.debug:
+				print "You: '" + text_message + "'"
 			return text_message

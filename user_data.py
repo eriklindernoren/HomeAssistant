@@ -9,26 +9,37 @@ class UserData(object):
         self.news_country_code = news_country_code
         self.weather_api_token = weather_api_token
 
-    def find_weather(self):
-        loc_obj = self.get_location()
+    def find_weather(self, time, location=None):
+
+
+        loc_obj = location
+        if not loc_obj:
+            loc_obj = self.get_location()
+
+        time_obj = time
 
         lat = loc_obj['lat']
         lon = loc_obj['lon']
 
-        weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s" % (self.weather_api_token, lat, lon)
+        units = 'si'
+
+        exclude = 'minutely,hourly,daily,alerts,flags'
+
+        weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s,%s?exclude=%s&units=%s" % (self.weather_api_token, lat, lon, time_obj, exclude, units)
         r = requests.get(weather_req_url)
         weather_json = json.loads(r.text)
 
         temperature = int(weather_json['currently']['temperature'])
 
         current_forecast = weather_json['currently']['summary']
-        hourly_forecast = weather_json['minutely']['summary']
-        daily_forecast = weather_json['hourly']['summary']
-        weekly_forecast = weather_json['daily']['summary']
-        icon = weather_json['currently']['icon']
-        wind_speed = int(weather_json['currently']['windSpeed'])
+        # hourly_forecast = weather_json['minutely']['summary']
+        # daily_forecast = weather_json['hourly']['summary']
+        # weekly_forecast = weather_json['daily']['summary']
+        # icon = weather_json['currently']['icon']
+        # wind_speed = int(weather_json['currently']['windSpeed'])
 
-        return {'temperature': temperature, 'icon': icon, 'windSpeed': wind_speed, 'current_forecast': current_forecast, 'hourly_forecast': hourly_forecast, 'daily_forecast': daily_forecast, 'weekly_forecast': weekly_forecast}
+        return {'temperature': temperature, 'current_forecast': current_forecast}
+        # return {'temperature': temperature, 'icon': icon, 'windSpeed': wind_speed, 'current_forecast': current_forecast, 'hourly_forecast': hourly_forecast, 'daily_forecast': daily_forecast, 'weekly_forecast': weekly_forecast}
 
     def get_location(self):
         # get location
