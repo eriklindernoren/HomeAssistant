@@ -72,7 +72,10 @@ class NLG(object):
 
     def searching(self):
         searching_phrases = [
-            "I'll see what I can find"
+            "I will see what I can find",
+            "Let me look that up for you",
+            "Hold on a second and let me look it up",
+            "Just a second sir"
         ]
 
         return random.choice(searching_phrases)
@@ -124,23 +127,23 @@ class NLG(object):
 
     def personal_status(self, status_type=None):
         positive_status=[
-            "I'm doing well",
+            "I am doing well",
             "Great, thanks for asking",
-            "I'm doing great"
+            "I am doing great",
         ]
 
         negative_status = [
-            "I'm not doing well",
-            "I'm feeling terrible",
-            "I'm not doing well today",
+            "Very busy, sir",
+            "Increadibly bored",
+            "I am not doing well today",
             "I could be much better"
         ]
 
         moderate_status = [
-            "I'm doing alright",
-            "I'm okay",
+            "I am doing alright",
+            "I am okay",
             "I could be better",
-            "I'm alright"
+            "I am alright"
         ]
 
         if status_type == 'negative':
@@ -160,7 +163,7 @@ class NLG(object):
             "Today a man knocked on my door and asked for a small donation towards the local swimming pool. I gave him a glass of water.",
             "A recent study has found that women who carry a little extra weight live longer than the men who mention it.",
             "I can totally keep secrets. It's the people I tell them to that can't.",
-            "My therapist says I have a preoccupation with vengeance. We'll see about that.",
+            "My therapist says I have a preoccupation with vengeance. We will see about that.",
             "Money talks ...but all mine ever says is good-bye.",
             "I started out with nothing, and I still have most of it.",
             "I used to think I was indecisive, but now I'm not too sure.",
@@ -225,14 +228,14 @@ class NLG(object):
         greeting_words = [
             "Hi",
             "Hey",
-            "Hello"
+            "Hello",
         ]
 
         goofy_greetings = [
-            "what's up?",
-            "howdy",
-            "what's crackin'?",
-            "top of the morning to ya"
+            "Good day to you sir.",
+            "Heeey.",
+            "What is cracking?",
+            "zup."
         ]
 
         choice = random.randint(0,4)
@@ -253,65 +256,53 @@ class NLG(object):
 
         return ret_phrase
 
-    def weather(self, temperature, date, tense):
-        """
-        Generates a statement about the current weather.
-        :param temperature:
-        :param date:
-        :param tense:
-        :return:
-        """
-
-        ret_phrase = self.generate('none', {'subject':"the temperature", 'object': "%d degrees" % temperature, 'verb': 'is', 'adverbs': ["%s" % self.time_of_day(date, with_adjective=True)]}, tense)
-        return ret_phrase
-
-    def forecast(self, forecast_obj):
+    def weather(self, forecast_obj, date):
 
         ret_phrase = ""
         forecast = ""
 
-        if forecast_obj.get("forecast") is None:
-            return ret_phrase
-        else:
-            forecast = forecast_obj.get("forecast")
-
-        forecast_current = [
-            "Currently, it's",
-            "Right now, it's",
-            "At the moment, it's",
-            "It's",
-            "It is"
-        ]
-
-        forecast_hourly = [
-            "It's",
+        post = [
             "It will be",
             "Looks like it will be"
         ]
 
-        forecast_daily = [
-            ""
+        pre = [
+            "It was"
         ]
 
-        if forecast_obj.get('forecast_type') == "current":
-            ret_phrase = "%s %s" % (random.choice(forecast_current), forecast)
-        elif forecast_obj.get('forecast_type') == "hourly":
-            ret_phrase = "%s %s" % (random.choice(forecast_hourly), forecast)
-        elif forecast_obj.get('forecast_type') == "daily":
-            ret_phrase = "%s %s" % (random.choice(forecast_daily), forecast)
+        request_type = forecast_obj['forecast_type']
+
+        if request_type == "current":
+            temperature = forecast_obj["temperature"]
+            ret_phrase = self.generate('none', {'subject':"the temperature", 'object': "%d degrees" % temperature, 'verb': 'is', 'adverbs': ["%s" % self.time_of_day(date, with_adjective=True)]}, "present")
+        elif request_type == "hour":
+            start = random.choice(post)
+            if date < datetime.datetime.now():
+                start = random.choice(pre)
+            temperature = forecast_obj["temperature"]
+            summary = forecast_obj["summary"]
+            ret_phrase = "%s %s with a temperature of %s degrees" % (start, summary, temperature)
+        elif request_type == "day":
+            start = random.choice(post)
+            if date < datetime.datetime.now():
+                start = random.choice(pre)
+            summary = forecast_obj['summary']
+            temp_min = forecast_obj['temp_min']
+            temp_max = forecast_obj['temp_max']
+            ret_phrase = "%s %s with temperatures between %s and %s degrees" % (start, summary, temp_min, temp_max)
 
         return ret_phrase
 
+
     def appreciation(self):
         phrases = [
-            "No problem!",
-            "Any time",
+            "My pleasure, sir.",
+            "You are too kind.",
             "You are welcome",
-            "You're welcome",
             "Sure, no problem",
             "Of course",
-            "Don't mention it",
-            "Don't worry about it"
+            "Don not mention it",
+            "Don not worry about it"
         ]
 
         return random.choice(phrases)

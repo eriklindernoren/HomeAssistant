@@ -9,37 +9,51 @@ class UserData(object):
         self.news_country_code = news_country_code
         self.weather_api_token = weather_api_token
 
-    def find_weather(self, time, location=None):
+    def find_weather(self, time, location=None, request_type="currently"):
 
+        forecasts = {
+            "minutely"  : "minutely_forecast",
+            "hourly"    : "hourly_forecast",
+            "daily"     : "daily_forecast",
+            "currently" : "current_forecast"
+        }
 
         loc_obj = location
         if not loc_obj:
             loc_obj = self.get_location()
-
         time_obj = time
 
         lat = loc_obj['lat']
         lon = loc_obj['lon']
 
         units = 'si'
+        request_types = ['minutely','currently','hourly','daily','alerts','flags']
+        request_types.remove(request_type)
 
-        exclude = 'minutely,hourly,daily,alerts,flags'
+        exclude = ','.join(request_types)[:-1]
 
         weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s,%s?exclude=%s&units=%s" % (self.weather_api_token, lat, lon, time_obj, exclude, units)
         r = requests.get(weather_req_url)
         weather_json = json.loads(r.text)
 
-        temperature = int(weather_json['currently']['temperature'])
+        forecast_request = forecasts[request_type]
 
-        current_forecast = weather_json['currently']['summary']
-        # hourly_forecast = weather_json['minutely']['summary']
-        # daily_forecast = weather_json['hourly']['summary']
-        # weekly_forecast = weather_json['daily']['summary']
-        # icon = weather_json['currently']['icon']
-        # wind_speed = int(weather_json['currently']['windSpeed'])
-
-        return {'temperature': temperature, 'current_forecast': current_forecast}
-        # return {'temperature': temperature, 'icon': icon, 'windSpeed': wind_speed, 'current_forecast': current_forecast, 'hourly_forecast': hourly_forecast, 'daily_forecast': daily_forecast, 'weekly_forecast': weekly_forecast}
+        if forecast_request == "current_forecast":
+            temperature = int(weather_json[request_type]['temperature'])
+            current_forecast = weather_json[request_type]['summary']
+            return {'forecast_type': 'current', 'temperature': temperature, 'current_forecast': current_forecast}
+        elif forecast_request == "daily_forecast":
+            summary = weather_json[request_type]['data'][0]['summary']
+            temp_min = weather_json[request_type]['data'][0]['temperatureMin']
+            temp_max = weather_json[request_type]['data'][0]['temperatureMax']
+            return {'forecast_type': 'day', 'summary': summary, 'temp_min': temp_min, 'temp_max': temp_max}
+        elif forecast_request == "hourly_forecast":
+            hour = int(time_obj.split('T')[1].split(':')[0])
+            temperature = weather_json[request_type]['data'][hour]['temperature']
+            summary = weather_json[request_type]['data'][hour]['summary']
+            return {'forecast_type': 'hour', 'summary': summary, 'temperature': temperature} 
+        
+        return {}
 
     def get_location(self):
         # get location
