@@ -11,7 +11,6 @@ DARKSKY_TOKEN = os.environ['DARKSKY_TOKEN']
 NAME = "Erik"
 
 
-
 class Alfred(object):
     def __init__(self):
         # self.nlg = NLG(user_name=name)
@@ -36,11 +35,6 @@ class Alfred(object):
         if 'Alfred' in message:
             self.context['active'] = 'True'
 
-    def _send(self, request, response):
-        resp = response['text']
-        print 'Alfred:', response['text']
-        self.audio_handler.speak(resp)
-
     def _converse(self, context, message):
         new_context = self.client.run_actions(self.session_id, message, self.context)
         context = new_context
@@ -49,6 +43,10 @@ class Alfred(object):
     # --------
     # ACTIONS
     # --------
+
+    def _send(self, request, response):
+        message = response['text']
+        self.audio_handler.speak(message)
 
     def _get_team_prospect(self, request):
         context = request['context']
@@ -109,34 +107,17 @@ class Alfred(object):
         signal.signal(signal.SIGALRM, self._active_timeout)
 
         while 1:
-            # try:
-            if 'active' in self.context:
-                signal.alarm(20)
-            input_text = self.audio_handler.get_audio_as_text()
-            self._if_wake_alfred(input_text, self.context)
-            print "Erik:", input_text
-            if 'active' in self.context:
-                signal.alarm(0)
-                self._converse(self.context, input_text)
-            # except Exception as e:
-            #     print("Google Speech Recognition could not understand audio")
+            try:
+                if 'active' in self.context:
+                    signal.alarm(20)
+                input_text = self.audio_handler.get_audio_as_text()
+                self._if_wake_alfred(input_text, self.context)
+                if 'active' in self.context:
+                    signal.alarm(0)
+                    self._converse(self.context, input_text)
+            except Exception as e:
+                print("Google Speech Recognition could not understand audio")
 
-
-# try:
-#     while 1:
-#         with sr.Microphone() as source:
-#             print("Say something!")
-#             audio = r.listen(source)
-#         input = r.recognize_wit(audio, key=access_token)
-#         print("Wit.ai thinks you said: " + input)
-#         session_id = '111'
-#         context0 = {}
-#         context1 = client.run_actions(session_id, input, context0)
-#         print('The session state is now: ' + str(context1))
-# except sr.UnknownValueError:
-#     print("Wit.ai could not understand audio")
-# except sr.RequestError as e:
-#     print("Could not request results from Wit.ai service; {0}".format(e))
 
 if __name__ == "__main__":
     alfred = Alfred()
