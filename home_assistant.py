@@ -1,5 +1,5 @@
-import sys, os, signal, datetime, threading, logging
-from flask import Flask, render_template, jsonify
+import sys, os, signal, datetime, threading, logging, time
+from flask import Flask, render_template, jsonify, request
 from wit import Wit
 from os import system
 from get_data import RemoteData
@@ -11,12 +11,10 @@ app = Flask(__name__)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-
 WIT_TOKEN = os.environ['WIT_TOKEN']
 DARKSKY_TOKEN = os.environ['DARKSKY_TOKEN']
 
 NAME = "Erik"
-
 
 class Alfred(threading.Thread):
     def __init__(self):
@@ -28,6 +26,18 @@ class Alfred(threading.Thread):
         self.context = {}
         self.last_ai_message = ""
         self.last_user_message = ""
+
+    def close(self):
+        self.nlg.close()
+        sys.exit(0)
+
+    def get_ai_message(self):
+        message = self.last_ai_message
+        return message
+
+    def get_user_message(self):
+        message = self.last_user_message
+        return message
 
     def _active_timeout(self, signum, frame):
         print "Timeout..."
@@ -52,6 +62,7 @@ class Alfred(threading.Thread):
         print('The session state is now: ' + str(context))
         
 
+
     # --------
     # ACTIONS
     # --------
@@ -59,7 +70,6 @@ class Alfred(threading.Thread):
     def _send(self, request, response):
         message = response['text']
         self.last_ai_message = message
-        self.audio_handler.speak(message)
 
     def _get_team_prospect(self, request):
         context = request['context']
@@ -149,19 +159,8 @@ class Alfred(threading.Thread):
     def _exit(self, request):
         context = request['context']
         del context['active']
+        context['bye'] = self.nlg.goodbye()
         return context
-
-    def close(self, signal, frame):
-        self.nlg.close()
-        sys.exit(0)
-
-    def get_ai_message(self):
-        message = self.last_ai_message
-        return message
-
-    def get_user_message(self):
-        message = self.last_user_message
-        return message
 
     # --------
     # START BOT
@@ -191,13 +190,24 @@ class Alfred(threading.Thread):
             except Exception as e:
                 continue
 
-alfred = Alfred()
 
-signal.signal(signal.SIGINT, alfred.close)
+alfred = Alfred()
 
 @app.route("/")
 def startAlfred():
     return render_template('alfred.html')
+
+# @app.route('/_handle_text', methods= ['GET'])
+# def handleText():
+#     input_text = request.args.get('text', 0, type=str)
+#     print input_text
+#     alfred._if_wake_alfred(input_text, alfred.context)
+#     if 'active' in alfred.context:
+#         alfred.last_user_message = input_text
+#         alfred._converse(alfred.context, input_text)
+#     user_message = alfred.get_user_message()
+#     ai_message = alfred.get_ai_message()
+#     return jsonify(ai_message=ai_message, user_message=user_message)
 
 @app.route('/_get_message', methods= ['GET'])
 def getMessage():

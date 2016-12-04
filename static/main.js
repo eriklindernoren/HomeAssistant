@@ -13,6 +13,46 @@ var updateAIMessage = function(new_message){
 	$("#message").text(new_message);
 }
 
+// -------------
+// Google STT 
+// -------------
+// var recognition = new webkitSpeechRecognition();
+// recognition.continuous = false;
+// recognition.interimResults = true;
+
+// var record = function() {
+
+// 	final_transcript = ""
+// 	interim_transcript = ""
+// 	recognition.onresult = function(event) { 
+// 		var interim_transcript = '';
+// 		for (var i = event.resultIndex; i < event.results.length; ++i) {
+// 			console.log(event.results[i]);
+// 			if (event.results[i].isFinal) {
+// 				final_transcript = event.results[i][0].transcript;
+// 				$("#you").text(final_transcript);
+// 				var url = window.location.href + "_handle_text";
+// 				$.getJSON(url, {
+// 			        text: final_transcript,
+// 			      }, function(data) {
+// 			      	say(data.ai_message);
+// 			        $("#message").text(data.ai_message);
+// 			        final_transcript = "";
+// 					setTimeout(function(){ record(); }, 5000);
+// 			      });
+// 			} else {
+// 				interim_transcript += event.results[i][0].transcript;
+// 				$("#you").text(interim_transcript);
+// 			}
+// 		}
+// 	}
+// 	recognition.start();
+// }
+
+// ------------------------------------------------
+//  				MAIN LOOP
+// - Look for changes => Update visuals + speak -
+// ------------------------------------------------
 
 $(document).ready(function () {
 
@@ -21,9 +61,9 @@ var last_user_message = ""
 setInterval(                               
   function()
   {
-  	var url = 'http://127.0.0.1:5000/_get_message';
+  	var url = window.location.href + '_get_message';
      $.getJSON(
-        $SCRIPT_ROOT + '/_get_message',
+        url,
         {},
         function(data)
         {

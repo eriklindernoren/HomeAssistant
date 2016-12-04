@@ -10,12 +10,6 @@ class AudioHandler(object):
 		self.recognizer = sr.Recognizer()
 		if self.energy_threshold:
 			self.recognizer.energy_threshold = self.energy_threshold
-		
-
-	def speak(self, message):
-		if self.debug:
-			print "Alfred: '" + message + "'"
-		# system("say -v Daniel '" + message + "'")
 
 	def get_audio_as_text(self):
 		with self.mic as source:
@@ -28,8 +22,6 @@ class AudioHandler(object):
 			message = text.split(" ")[0].capitalize()
 			if(word_count > 1):
 				message += " " + " ".join(text.split(" ")[1:])
-
-			# text_message = self.recognizer.recognize_wit(audio, key=access_token) 
 			if self.debug:
 				print "You: '" + message + "'"
 			return message

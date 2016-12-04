@@ -6,20 +6,12 @@
 </head>
 <body>
 
-
-	<p>Hello! I'm Alfred.</p>
+	<p>Good day to you sir! My name is Alfred.</p>
 	<p id="you">Message</p>
 	<p id="message">Message</p>
 
-
-
-
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	<script src="https://code.responsivevoice.org/responsivevoice.js"></script>
-	<script type=text/javascript>
-		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-		console.log($SCRIPT_ROOT);
-	</script>
 	<script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
 
 </body>
