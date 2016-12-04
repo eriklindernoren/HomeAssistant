@@ -4,4 +4,3 @@
 
 
 
-![alt tag](http://eriklindernoren.se/images/alfred.jpeg)
