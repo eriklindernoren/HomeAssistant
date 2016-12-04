@@ -1,0 +1,26 @@
+<html>
+<head>
+	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<!-- Raleway -->
+	<link href='https://fonts.googleapis.com/css?family=Raleway:400,300,500' rel='stylesheet' type='text/css'>
+</head>
+<body>
+
+
+	<p>Hello! I'm Alfred.</p>
+	<p id="you">Message</p>
+	<p id="message">Message</p>
+
+
+
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+	<script type=text/javascript>
+		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+		console.log($SCRIPT_ROOT);
+	</script>
+	<script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
+
+</body>
+</html>

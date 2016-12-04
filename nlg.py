@@ -80,16 +80,6 @@ class NLG(object):
 
         return random.choice(searching_phrases)
 
-    def snow_white(self):
-
-        phrases = [
-            "You are",
-            "You",
-            "You are, of course"
-        ]
-
-        return random.choice(phrases)
-
     def user_status(self, type='positive', attribute=None):
 
         ret_phrase = ""
@@ -158,21 +148,21 @@ class NLG(object):
             "Artificial intelligence is no match for natural stupidity.",
             "This morning I made a mistake and poured milk over my breakfast instead of oil, and it rusted before I could eat it.",
             "An Englishman, an Irishman and a Scotsman walk into a bar. The bartender turns to them, takes one look, and says, \"What is this - some kind of joke?\"",
-            "What's an onomatopoeia? Just what it sounds like!",
+            "What is an onomatopoeia? Just what it sounds like!",
             "Why did the elephant cross the road? Because the chicken retired.",
             "Today a man knocked on my door and asked for a small donation towards the local swimming pool. I gave him a glass of water.",
             "A recent study has found that women who carry a little extra weight live longer than the men who mention it.",
-            "I can totally keep secrets. It's the people I tell them to that can't.",
+            "I can totally keep secrets. It is the people I tell them to that can not.",
             "My therapist says I have a preoccupation with vengeance. We will see about that.",
             "Money talks ...but all mine ever says is good-bye.",
             "I started out with nothing, and I still have most of it.",
-            "I used to think I was indecisive, but now I'm not too sure.",
-            "I named my hard drive dat ass so once a month my computer asks if I want to 'back dat ass up'.",
+            "I used to think I was indecisive, but now I am not too sure.",
+            "I named my hard drive that ass, so once a month my computer asks if I want to back that ass up.",
             "A clean house is the sign of a broken computer.",
             "My favorite mythical creature? The honest politician.",
             "Regular naps prevent old age, especially if you take them while driving.",
             "For maximum attention, nothing beats a good mistake.",
-            "Take my advice. I'm not using it."
+            "Take my advice. I am not using it."
         ]
 
         return random.choice(jokes)
@@ -319,7 +309,8 @@ class NLG(object):
     def meaning_of_life(self):
         phrases = [
             "42",
-            "The meaning of life, the universe, and everything else is 42"
+            "The meaning of life, the universe, and everything else is 42",
+            "Let me look that up for you..... Ok, I found nothing."
         ]
 
         return random.choice(phrases)

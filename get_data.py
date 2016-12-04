@@ -4,7 +4,7 @@ import feedparser
 import datetime
 
 
-class UserData(object):
+class RemoteData(object):
     def __init__(self, weather_api_token, news_country_code='us'):
         self.news_country_code = news_country_code
         self.weather_api_token = weather_api_token
@@ -56,7 +56,6 @@ class UserData(object):
         return {}
 
     def get_location(self):
-        # get location
         location_req_url = "http://freegeoip.net/json/%s" % self.get_ip()
         r = requests.get(location_req_url)
         location_obj = json.loads(r.text)
@@ -93,7 +92,7 @@ class UserData(object):
 
     def get_holidays(self):
         today = datetime.datetime.now()
-        r = requests.get("http://kayaposoft.com/enrico/json/v1.0/?action=getPublicHolidaysForYear&year=%s&country=usa" % today.year)
+        r = requests.get("http://kayaposoft.com/enrico/json/v1.0/?action=getPublicHolidaysForYear&year=%s&country=swe" % today.year)
         holidays = json.loads(r.text)
 
         return holidays

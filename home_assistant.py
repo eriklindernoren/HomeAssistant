@@ -1,9 +1,15 @@
-import sys, os, signal, datetime
+import sys, os, signal, datetime, threading, logging
+from flask import Flask, render_template, jsonify
 from wit import Wit
 from os import system
-from user_data import UserData
+from get_data import RemoteData
 from audio_handler import AudioHandler
 from nlg import NLG
+
+app = Flask(__name__)
+
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 
 WIT_TOKEN = os.environ['WIT_TOKEN']
@@ -12,13 +18,16 @@ DARKSKY_TOKEN = os.environ['DARKSKY_TOKEN']
 NAME = "Erik"
 
 
-class Alfred(object):
+class Alfred(threading.Thread):
     def __init__(self):
+        threading.Thread.__init__(self)
         self.nlg = NLG(user_name=NAME)
-        self.user_data = UserData(weather_api_token=DARKSKY_TOKEN)
+        self.remote_data_access = RemoteData(weather_api_token=DARKSKY_TOKEN)
         self.audio_handler = AudioHandler(debug=True)
         self.session_id = 'session_id'
         self.context = {}
+        self.last_ai_message = ""
+        self.last_user_message = ""
 
     def _active_timeout(self, signum, frame):
         print "Timeout..."
@@ -41,6 +50,7 @@ class Alfred(object):
         new_context = self.client.run_actions(self.session_id, message, self.context)
         context = new_context
         print('The session state is now: ' + str(context))
+        
 
     # --------
     # ACTIONS
@@ -48,6 +58,7 @@ class Alfred(object):
 
     def _send(self, request, response):
         message = response['text']
+        self.last_ai_message = message
         self.audio_handler.speak(message)
 
     def _get_team_prospect(self, request):
@@ -85,11 +96,11 @@ class Alfred(object):
         time_query = str(time).split('.')[0].replace(' ', 'T')    # Remove timezone
 
 
-        encoded_date_obj = datetime.datetime.strptime(time.split('.')[0], '%Y-%m-%dT%H:%M:%S')
+        encoded_date_obj = datetime.datetime.strptime(time_query.split('.')[0], '%Y-%m-%dT%H:%M:%S')
 
         search_phrase = self.nlg.searching()
-        self.audio_handler.speak(search_phrase)
-        weather_obj = self.user_data.find_weather(time_query, loc, weather_request)
+        self.last_ai_message = search_phrase
+        weather_obj = self.remote_data_access.find_weather(time_query, loc, weather_request)
 
         context['forecast'] = self.nlg.weather(weather_obj, encoded_date_obj)
 
@@ -119,21 +130,43 @@ class Alfred(object):
 
         return context
 
+    def _appreciation_response(self, request):
+        context = request['context']
+        entities = request['entities']
+
+        context['status'] = self.nlg.appreciation()
+
+        return context
+
+    def _acknowledgement(self, request):
+        context = request['context']
+        entities = request['entities']
+
+        context['status'] = self.nlg.acknowledge()
+
+        return context
+
     def _exit(self, request):
         context = request['context']
         del context['active']
         return context
 
-    def _close(self, signal, frame):
+    def close(self, signal, frame):
         self.nlg.close()
-        print
         sys.exit(0)
+
+    def get_ai_message(self):
+        message = self.last_ai_message
+        return message
+
+    def get_user_message(self):
+        message = self.last_user_message
+        return message
 
     # --------
     # START BOT
     # --------
-    
-    def start(self):
+    def run(self):
 
         self.actions = {
             'send': self._send,
@@ -142,28 +175,38 @@ class Alfred(object):
             'exit': self._exit,
             'greeting': self._greeting,
             'getJoke': self._joke,
-            'getStatus': self._status
+            'getStatus': self._status,
+            'getAppreciationResponse': self._appreciation_response,
+            'getAcknowledgement': self._acknowledgement
         }
-        self.client = Wit(access_token=WIT_TOKEN, actions=self.actions)
-
-        # signal.signal(signal.SIGALRM, self._active_timeout)
-        signal.signal(signal.SIGINT, self._close)
+        self.client = Wit(access_token=WIT_TOKEN, actions=self.actions)        
 
         while 1:
             try:
-                # 20 second timeout before bot goes to passive listening
-                # if 'active' in self.context:
-                #     signal.alarm(20)
                 input_text = self.audio_handler.get_audio_as_text()
                 self._if_wake_alfred(input_text, self.context)
                 if 'active' in self.context:
-                    # signal.alarm(0)
+                    self.last_user_message = input_text
                     self._converse(self.context, input_text)
             except Exception as e:
-                print("Exception caught.")
+                continue
 
+alfred = Alfred()
+
+signal.signal(signal.SIGINT, alfred.close)
+
+@app.route("/")
+def startAlfred():
+    return render_template('alfred.html')
+
+@app.route('/_get_message', methods= ['GET'])
+def getMessage():
+    user_message = alfred.get_user_message()
+    ai_message = alfred.get_ai_message()
+    return jsonify(ai_message=ai_message, user_message=user_message)
 
 if __name__ == "__main__":
-    alfred = Alfred()
     alfred.start()
+    app.run()
+
 

@@ -15,7 +15,7 @@ class AudioHandler(object):
 	def speak(self, message):
 		if self.debug:
 			print "Alfred: '" + message + "'"
-		system("say -v Fred '" + message + "'")
+		# system("say -v Daniel '" + message + "'")
 
 	def get_audio_as_text(self):
 		with self.mic as source:
@@ -23,8 +23,13 @@ class AudioHandler(object):
 				self.recognizer.adjust_for_ambient_noise(source)
 			print("Talk to Alfred...")
 			audio = self.recognizer.listen(source)
-			text_message = self.recognizer.recognize_google(audio)
+			text = self.recognizer.recognize_google(audio)
+			word_count = len(text.split(" "))
+			message = text.split(" ")[0].capitalize()
+			if(word_count > 1):
+				message += " " + " ".join(text.split(" ")[1:])
+
 			# text_message = self.recognizer.recognize_wit(audio, key=access_token) 
 			if self.debug:
-				print "You: '" + text_message + "'"
-			return text_message
+				print "You: '" + message + "'"
+			return message

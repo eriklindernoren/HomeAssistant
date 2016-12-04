@@ -1,0 +1,28 @@
+body,html{
+	font-family: "Raleway";
+	font-weight: 400;
+	width: 100%;
+	height: 100%;
+	overflow-x: hidden;
+	position: relative;
+	background-color: white;
+}
+
+#you {
+	position: absolute;
+	left: 50%;
+	top: 20%;
+	transform: translateX(-50%) translateY(-50%);
+	font-size: 24px;
+	text-align: center;
+}
+
+#message {
+	position: absolute;
+	left: 50%;
+	top: 40%;
+	transform: translateX(-50%) translateY(-50%);
+	font-size: 40px;
+	line-height: 70px;
+	text-align: center;
+}
