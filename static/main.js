@@ -1,16 +1,41 @@
-var say = function(new_message){
+var setClientStatus = function(name, value) {
+	var url = window.location.href + "_client_status";
+	$.getJSON(url, {
+		talking: value,
+	}, function(data) {
+		console.log("Talking was set to: " + value)
+	});
+}
+
+var talking = false;
+
+function voiceStartCallback() {
+	setClientStatus("talking", 1);
+    talking = true;
+}
+ 
+function voiceEndCallback() {
+	setClientStatus("talking", 0);
+    talking = false;
+}
+
+var speak = function(new_message){
 	console.log("New speech: " + new_message);
-	responsiveVoice.speak(new_message, "UK English Male");
+	var parameters = {
+    	onstart: voiceStartCallback,
+    	onend: voiceEndCallback
+	}
+	responsiveVoice.speak(new_message, "UK English Male", parameters);
 }
 
 var updateUserMessage = function(new_message){
-	console.log("New message from you: " + new_message);
-	$("#you").text(new_message);
+	console.log("User message: " + new_message);
+	$("#user_message").text(new_message);
 }
 
 var updateAIMessage = function(new_message){
-	console.log("New message: " + new_message);
-	$("#message").text(new_message);
+	console.log("AI message: " + new_message);
+	$("#ai_message").text(new_message);
 }
 
 // -------------
@@ -67,14 +92,16 @@ setInterval(
         {},
         function(data)
         {
-        	if(last_ai_message != data.ai_message){
-        		last_ai_message = data.ai_message;
-        		updateAIMessage(last_ai_message) 
-        		say(last_ai_message);
-        	}
-        	if(last_user_message != data.user_message){
-        		last_user_message = data.user_message;
-        		updateUserMessage(last_user_message);
+        	if(!talking){
+	        	if(last_ai_message != data.ai_message){
+	        		last_ai_message = data.ai_message;
+	        		updateAIMessage(last_ai_message) 
+	        		speak(last_ai_message);
+        		}
+	        	if(last_user_message != data.user_message){
+	        		last_user_message = data.user_message;
+	        		updateUserMessage(last_user_message);
+	        	}
         	}
         });
   },

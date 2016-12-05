@@ -8,7 +8,7 @@ body,html{
 	background-color: white;
 }
 
-#you {
+#user_message {
 	position: absolute;
 	left: 50%;
 	top: 20%;
@@ -17,7 +17,7 @@ body,html{
 	text-align: center;
 }
 
-#message {
+#ai_message {
 	position: absolute;
 	left: 50%;
 	top: 40%;

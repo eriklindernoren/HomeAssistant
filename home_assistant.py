@@ -16,6 +16,8 @@ DARKSKY_TOKEN = os.environ['DARKSKY_TOKEN']
 
 NAME = "Erik"
 
+talking = False;
+
 class Alfred(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -26,6 +28,7 @@ class Alfred(threading.Thread):
         self.context = {}
         self.last_ai_message = ""
         self.last_user_message = ""
+        self.talking = False;
 
     def close(self):
         self.nlg.close()
@@ -182,11 +185,14 @@ class Alfred(threading.Thread):
 
         while 1:
             try:
-                input_text = self.audio_handler.get_audio_as_text()
-                self._if_wake_alfred(input_text, self.context)
-                if 'active' in self.context:
-                    self.last_user_message = input_text
-                    self._converse(self.context, input_text)
+                if not self.talking:
+                    input_text = self.audio_handler.get_audio_as_text()
+                    self._if_wake_alfred(input_text, self.context)
+                    if 'active' in self.context:
+                        self.last_user_message = input_text
+                        self._converse(self.context, input_text)
+                else:
+                    time.sleep(.2)
             except Exception as e:
                 continue
 
@@ -196,6 +202,14 @@ alfred = Alfred()
 @app.route("/")
 def startAlfred():
     return render_template('alfred.html')
+
+@app.route('/_client_status', methods= ['GET'])
+def handleClientStatus():
+    talking = request.args.get('talking', 0, type=int)
+    talking = (talking == 1)
+    alfred.talking = talking
+    print "Talking set to:", talking
+    return jsonify(success="true")
 
 # @app.route('/_handle_text', methods= ['GET'])
 # def handleText():
