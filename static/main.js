@@ -1,5 +1,5 @@
-var setClientStatus = function(name, value) {
-	var url = window.location.href + "_client_status";
+var setTalkingStatus = function(name, value) {
+	var url = window.location.href + "_talking";
 	$.getJSON(url, {
 		talking: value,
 	}, function(data) {
@@ -10,12 +10,12 @@ var setClientStatus = function(name, value) {
 var talking = false;
 
 function voiceStartCallback() {
-	setClientStatus("talking", 1);
+	setTalkingStatus("talking", 1);
     talking = true;
 }
  
 function voiceEndCallback() {
-	setClientStatus("talking", 0);
+	setTalkingStatus("talking", 0);
     talking = false;
 }
 

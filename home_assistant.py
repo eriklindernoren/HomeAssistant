@@ -203,7 +203,7 @@ alfred = Alfred()
 def startAlfred():
     return render_template('alfred.html')
 
-@app.route('/_client_status', methods= ['GET'])
+@app.route('/_talking', methods= ['GET'])
 def handleClientStatus():
     talking = request.args.get('talking', 0, type=int)
     talking = (talking == 1)
