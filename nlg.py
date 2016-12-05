@@ -117,12 +117,12 @@ class NLG(object):
 
     def goodbye(self):
         bye = [
-            "See you later, sir.",
-            "Take care, sir.",
-            "I will talk to you later then, sir.",
-            "Good bye, sir."
+            "See you later sir.",
+            "Take care sir.",
+            "I will talk to you later then.",
+            "Goodbye sir."
         ]
-        random.choice(bye)
+        return random.choice(bye)
 
     def personal_status(self, status_type=None):
         positive_status=[

@@ -16,8 +16,6 @@ DARKSKY_TOKEN = os.environ['DARKSKY_TOKEN']
 
 NAME = "Erik"
 
-talking = False;
-
 class Alfred(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -55,14 +53,14 @@ class Alfred(threading.Thread):
             return None
         return val['value'] if isinstance(val, dict) else val
 
-    def _if_wake_alfred(self, message, context):
-        if 'Alfred' in message:
+    def _if_wake_alfred(self, message):
+        if "Alfred" in message:
             self.context['active'] = 'True'
 
     def _converse(self, context, message):
         new_context = self.client.run_actions(self.session_id, message, self.context)
-        context = new_context
-        print('The session state is now: ' + str(context))
+        self.context = new_context
+        print('The session state is now: ' + str(self.context))
         
 
 
@@ -107,7 +105,6 @@ class Alfred(threading.Thread):
                 weather_request = "daily"
 
         time_query = str(time).split('.')[0].replace(' ', 'T')    # Remove timezone
-
 
         encoded_date_obj = datetime.datetime.strptime(time_query.split('.')[0], '%Y-%m-%dT%H:%M:%S')
 
@@ -162,8 +159,9 @@ class Alfred(threading.Thread):
     def _exit(self, request):
         context = request['context']
         del context['active']
-        context['bye'] = self.nlg.goodbye()
+        context["bye"] = self.nlg.goodbye()
         return context
+
 
     # --------
     # START BOT
@@ -187,7 +185,7 @@ class Alfred(threading.Thread):
             try:
                 if not self.talking:
                     input_text = self.audio_handler.get_audio_as_text()
-                    self._if_wake_alfred(input_text, self.context)
+                    self._if_wake_alfred(input_text)
                     if 'active' in self.context:
                         self.last_user_message = input_text
                         self._converse(self.context, input_text)
@@ -204,7 +202,7 @@ def startAlfred():
     return render_template('alfred.html')
 
 @app.route('/_talking', methods= ['GET'])
-def handleClientStatus():
+def handleTalkingStatus():
     talking = request.args.get('talking', 0, type=int)
     talking = (talking == 1)
     alfred.talking = talking

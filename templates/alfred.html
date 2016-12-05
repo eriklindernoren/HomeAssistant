@@ -6,9 +6,18 @@
 </head>
 <body>
 
-	<p>Good day! My name is Al_fred.</p>
-	<p id="user_message">Message</p>
-	<p id="ai_message">Message</p>
+
+	<p if="greeting">Hello! I'm Al_fred.</p>
+
+	<div id="user">
+		<p class="id">User</p>
+		<p id="user_message"></p>
+	</div>
+
+	<div id="alfred">
+		<p class="id">Al_fred</p>
+		<p id="ai_message"></p>
+	</div>	
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	<script src="https://code.responsivevoice.org/responsivevoice.js"></script>
