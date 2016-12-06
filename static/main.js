@@ -1,22 +1,21 @@
-var setTalkingStatus = function(name, value) {
+var setTalkingStatus = function(value) {
 	var url = window.location.href + "_talking";
 	$.getJSON(url, {
-		talking: value,
+		"talking": value,
 	}, function(data) {
 		console.log("Talking was set to: " + value)
 	});
 }
 
 var talking = false;
-
 function voiceStartCallback() {
-	setTalkingStatus("talking", 1);
-    talking = true;
+	setTalkingStatus(1);
+	talking = true;
 }
  
 function voiceEndCallback() {
-	setTalkingStatus("talking", 0);
-    talking = false;
+	setTalkingStatus(0);
+	talking = false;
 }
 
 var speak = function(new_message){

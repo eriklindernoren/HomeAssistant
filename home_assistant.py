@@ -5,6 +5,8 @@ from os import system
 from get_data import RemoteData
 from audio_handler import AudioHandler
 from nlg import NLG
+import uuid
+
 
 app = Flask(__name__)
 
@@ -22,11 +24,12 @@ class Alfred(threading.Thread):
         self.nlg = NLG(user_name=NAME)
         self.remote_data_access = RemoteData(weather_api_token=DARKSKY_TOKEN)
         self.audio_handler = AudioHandler(debug=True)
-        self.session_id = 'session_id'
+        self.session_id = uuid.uuid1()
         self.context = {}
         self.last_ai_message = ""
         self.last_user_message = ""
         self.talking = False;
+        self.active = True
 
     def close(self):
         self.nlg.close()
@@ -55,9 +58,14 @@ class Alfred(threading.Thread):
 
     def _if_wake_alfred(self, message):
         if "Alfred" in message:
-            self.context['active'] = 'True'
+            self.active = True
 
     def _converse(self, context, message):
+        # print ""
+        # print "Message:", message
+        # print "Context:", self.context
+        # print "Session-id:", self.session_id
+        # print ""
         new_context = self.client.run_actions(self.session_id, message, self.context)
         self.context = new_context
         print('The session state is now: ' + str(self.context))
@@ -70,23 +78,13 @@ class Alfred(threading.Thread):
 
     def _send(self, request, response):
         message = response['text']
-        self.last_ai_message = message
-
-    def _get_team_prospect(self, request):
-        context = request['context']
-        entities = request['entities']
-
-        team = self._first_entity_value(entities, 'team')
-        if team:
-            context['prospect'] = 'The ' + team + ' are looking really good.';
-        else:
-            if context.get('prospect') is not None:
-                del context['prospect']
-        return context
+        if not self.talking:
+            self.last_ai_message = message
+            print "Alfred:", message
 
     def _get_forecast(self, request):
-        context = request['context']
         entities = request['entities']
+        context = request['context']
 
         weather_request = "currently"
 
@@ -116,68 +114,88 @@ class Alfred(threading.Thread):
 
         return context
 
-    def _greeting(self, request):
-        context = request['context']
+    def _get_score(self, request):
         entities = request['entities']
+        context = request['context']
+
+        team = self._first_entity_value(entities, 'team')
+
+        # time_query = str(time).split('.')[0].replace(' ', 'T')    # Remove timezone
+        # encoded_date_obj = datetime.datetime.strptime(time_query.split('.')[0], '%Y-%m-%dT%H:%M:%S')
+
+        search_phrase = self.nlg.searching()
+        self.last_ai_message = search_phrase
+
+        score_obj = self.remote_data_access.get_score(team)
+
+        # context['forecast'] = self.nlg.weather(weather_obj, encoded_date_obj)
+
+        return context
+
+
+    def _greeting(self, request):
+        entities = request['entities']
+        context = request['context']
 
         context['greeting'] = self.nlg.greet()
 
         return context
 
     def _joke(self, request):
-        context = request['context']
         entities = request['entities']
+        context = request['context']
 
         context['joke'] = self.nlg.joke()
 
         return context
 
     def _status(self, request):
-        context = request['context']
         entities = request['entities']
+        context = request['context']
 
         context['status'] = self.nlg.personal_status()
 
         return context
 
     def _appreciation_response(self, request):
-        context = request['context']
         entities = request['entities']
+        context = request['context']
 
         context['status'] = self.nlg.appreciation()
 
         return context
 
     def _acknowledgement(self, request):
-        context = request['context']
         entities = request['entities']
+        context = request['context']
 
         context['status'] = self.nlg.acknowledge()
 
         return context
 
-    def _exit(self, request):
-        context = request['context']
-        del context['active']
+    def _sleep(self, request):
+        self.active = False
+        context = {}
         context["bye"] = self.nlg.goodbye()
         return context
 
 
-    # --------
+    # ---------
     # START BOT
-    # --------
+    # ---------
+
     def run(self):
 
         self.actions = {
             'send': self._send,
             'getForecast': self._get_forecast,
-            'getTeamProspects': self._get_team_prospect,
-            'exit': self._exit,
+            'goToSleep': self._sleep,
             'greeting': self._greeting,
             'getJoke': self._joke,
             'getStatus': self._status,
             'getAppreciationResponse': self._appreciation_response,
-            'getAcknowledgement': self._acknowledgement
+            'getAcknowledgement': self._acknowledgement,
+            'getScore': self._get_score
         }
         self.client = Wit(access_token=WIT_TOKEN, actions=self.actions)        
 
@@ -186,11 +204,11 @@ class Alfred(threading.Thread):
                 if not self.talking:
                     input_text = self.audio_handler.get_audio_as_text()
                     self._if_wake_alfred(input_text)
-                    if 'active' in self.context:
+                    if self.active:
                         self.last_user_message = input_text
                         self._converse(self.context, input_text)
                 else:
-                    time.sleep(.2)
+                    time.sleep(0.2)
             except Exception as e:
                 continue
 

@@ -55,6 +55,20 @@ class RemoteData(object):
         
         return {}
 
+    def get_score(self, team):
+        season = "2016-2017-regular"
+        format = "json"
+
+
+        # # score_url = "https://www.mysportsfeeds.com/api/feed/pull/nba/2016-2017-regular/game_boxscore.json?gameid={game-id}&teamstats={team-stats}
+        # r = requests.get(score_url)
+        # score = json.loads(r.text)
+
+        # lat = location_obj['latitude']
+        # lon = location_obj['longitude']
+
+        # return {'lat': lat, 'lon': lon}
+
     def get_location(self):
         location_req_url = "http://freegeoip.net/json/%s" % self.get_ip()
         r = requests.get(location_req_url)
