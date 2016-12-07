@@ -1,7 +1,10 @@
-import requests
-import json
-import feedparser
-import datetime
+import requests, os, json, feedparser, sys
+from pytz import timezone
+from datetime import datetime, timedelta
+
+SPORTS_FEED_USER = "eriklindernoren"
+# SPORTS_FEED_PSWD = os.environ['SPORTS_FEED_PSWD']
+SPORTS_FEED_PSWD = "sportsfeed"
 
 
 class RemoteData(object):
@@ -55,19 +58,59 @@ class RemoteData(object):
         
         return {}
 
-    def get_score(self, team):
+    def get_score(self, team="Celtics"):
+
+        team = team.capitalize()
+
+        eastern_time = datetime.now()
         season = "2016-2017-regular"
         format = "json"
 
+        counter = 2
+        home_team = ""
+        home_abbr = ""
+        away_team = ""
+        away_abbr = ""
+        while home_abbr == "" and counter > 0:
+            eastern_time -= timedelta(days=1)
+            date = str(eastern_time).split(" ")[0].replace("-", "")
+            games_url = "https://www.mysportsfeeds.com/api/feed/pull/nba/%s/daily_game_schedule.%s?fordate=%s" % (season, format, date)
+            r = requests.get(games_url, auth=(SPORTS_FEED_USER, SPORTS_FEED_PSWD))
+            game_json = json.loads(r.text)
 
-        # # score_url = "https://www.mysportsfeeds.com/api/feed/pull/nba/2016-2017-regular/game_boxscore.json?gameid={game-id}&teamstats={team-stats}
-        # r = requests.get(score_url)
-        # score = json.loads(r.text)
+            games = game_json['dailygameschedule']['gameentry']
+            if not games:
+                return None
 
-        # lat = location_obj['latitude']
-        # lon = location_obj['longitude']
+            for game in games:
+                if game['homeTeam']['Name'] == team or game['awayTeam']['Name'] == team:
+                    home_team = game['homeTeam']['Name']
+                    home_abbr = game['homeTeam']['Abbreviation']
+                    away_team = game['awayTeam']['Name']
+                    away_abbr = game['awayTeam']['Abbreviation']
+                    break
 
-        # return {'lat': lat, 'lon': lon}
+            counter -= 0
+        
+        # Couldn't find any game played in the last three days
+        if home_abbr == "":
+            return None
+        
+        game_id = "%s-%s-%s" % (date, away_abbr, home_abbr)
+        print game_id
+        score_url = "https://www.mysportsfeeds.com/api/feed/pull/nba/%s/game_boxscore.%s?gameid=%s&teamstats=PTS&playerstats=PTS" % (season, format, game_id)
+        print score_url
+        r = requests.get(score_url, auth=(SPORTS_FEED_USER, SPORTS_FEED_PSWD))
+        score = json.loads(r.text)
+
+        if not score:
+            return None
+
+        scores = score['gameboxscore']['quarterSummary']['quarterTotals']
+        score_data = {'home_team': home_team, 'home_score': scores['homeScore'], 'away_team': away_team, 'away_score': scores['awayScore']}
+        print score_data
+
+        return score_data
 
     def get_location(self):
         location_req_url = "http://freegeoip.net/json/%s" % self.get_ip()
@@ -105,7 +148,7 @@ class RemoteData(object):
         return ret_headlines
 
     def get_holidays(self):
-        today = datetime.datetime.now()
+        today = datetime.now()
         r = requests.get("http://kayaposoft.com/enrico/json/v1.0/?action=getPublicHolidaysForYear&year=%s&country=swe" % today.year)
         holidays = json.loads(r.text)
 

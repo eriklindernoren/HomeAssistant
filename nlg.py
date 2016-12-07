@@ -171,7 +171,11 @@ class NLG(object):
             "My favorite mythical creature? The honest politician.",
             "Regular naps prevent old age, especially if you take them while driving.",
             "For maximum attention, nothing beats a good mistake.",
-            "Take my advice. I am not using it."
+            "Take my advice. I am not using it.",
+            'Did you hear about the two antennas that got married? The ceremony was long and boring, but the reception was great!',
+            'Chuck Norris counted to infinity - twice.',
+            'Death once had a near-Chuck Norris experience.',
+            'Why was the Math book sad? Because it had so many problems.'
         ]
 
         return random.choice(jokes)
@@ -207,7 +211,7 @@ class NLG(object):
     def article_interest(self, article_titles):
         ret_phrase = None
 
-        if random.randint(0,2) == 0: # 1 in 3 chance the bot will express interest in a random article
+        if True or random.randint(0,2) == 0: # 1 in 3 chance the bot will express interest in a random article
             if article_titles is not None:
                 article = random.choice(article_titles)
                 article = article.rsplit('-', 1)[0]
@@ -218,7 +222,7 @@ class NLG(object):
     def insult(self):
         return "That's not very nice. Talk to me again when you have fixed your attitude"
 
-    def greet(self):
+    def greet(self, by_name):
         """
         Creates a greeting phrase.
         :return:
@@ -231,10 +235,9 @@ class NLG(object):
         ]
 
         goofy_greetings = [
-            "Good day to you sir.",
-            "Heeey.",
+            "Good day to you.",
             "What is cracking?",
-            "zup."
+            "What is up."
         ]
 
         choice = random.randint(0,4)
@@ -242,14 +245,16 @@ class NLG(object):
 
         if (choice == 0) or (choice == 3): # time related
             ret_phrase = "Good %s" % self.time_of_day(datetime.datetime.now())
-            if self.user_name is not None:
-                if random.randint(0, 1) == 0:
-                    ret_phrase = "%s %s" % (ret_phrase, self.user_name)
+            if by_name and self.user_name is not None:
+                ret_phrase = "%s %s" % (ret_phrase, self.user_name)
+            elif random.randint(0,1) == 0:
+                ret_phrase = "%s %s" % (ret_phrase, "sir")
         elif (choice == 1) or (choice == 4): # standard greeting
             ret_phrase = random.choice(greeting_words)
-            if self.user_name is not None:
-                if random.randint(0, 1) == 0:
-                    ret_phrase = "%s %s" % (ret_phrase, self.user_name)
+            if by_name and self.user_name is not None:
+                ret_phrase = "%s %s" % (ret_phrase, self.user_name)
+            elif random.randint(0,1) == 0:
+                ret_phrase = "%s %s" % (ret_phrase, "sir")
         elif choice == 2: # goofy greeting
             ret_phrase = random.choice(goofy_greetings)
 
@@ -293,6 +298,28 @@ class NLG(object):
         return ret_phrase
 
 
+    def score(self, score_obj):
+
+        ret_phrase = ""
+        home_score = int(score_obj['home_score'])
+        away_score = int(score_obj['away_score'])
+
+        if home_score > away_score:
+            winner = score_obj['home_team']
+            w_score = home_score
+            loser = score_obj['away_team']
+            l_score = away_score
+        else:
+            winner = score_obj['away_team']
+            w_score = away_score
+            loser = score_obj['home_team']
+            l_score = home_score
+
+        ret_phrase = "The %s beat the %s by %i to %i" % (winner, loser, w_score, l_score)
+
+        return ret_phrase
+
+
     def appreciation(self):
         phrases = [
             "My pleasure, sir.",
@@ -329,7 +356,11 @@ class NLG(object):
 
     def time_of_day(self, date, with_adjective=False):
         ret_phrase = ""
-        if date.hour < 10:
+        if date.hour < 4:
+            ret_phrase = "night"
+            if with_adjective:
+                ret_phrase = "%s %s" % ("this", ret_phrase)
+        elif date.hour < 10:
             ret_phrase = "morning"
             if with_adjective:
                 ret_phrase = "%s %s" % ("this", ret_phrase)

@@ -45,7 +45,7 @@ body,html{
 
 #ai_message {
 	position: absolute;
-	top: -2px;
+	top: 0px;
 	left: 50%;
 	transform: translateX(-50%);
 	font-size: 40px;

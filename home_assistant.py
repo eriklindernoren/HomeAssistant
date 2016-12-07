@@ -128,7 +128,25 @@ class Alfred(threading.Thread):
 
         score_obj = self.remote_data_access.get_score(team)
 
-        # context['forecast'] = self.nlg.weather(weather_obj, encoded_date_obj)
+        context['score'] = self.nlg.score(score_obj)
+
+        return context
+
+    def _get_news(self, request):
+        entities = request['entities']
+        context = request['context']
+
+        # team = self._first_entity_value(entities, 'team')
+
+        # time_query = str(time).split('.')[0].replace(' ', 'T')    # Remove timezone
+        # encoded_date_obj = datetime.datetime.strptime(time_query.split('.')[0], '%Y-%m-%dT%H:%M:%S')
+        
+        news_obj = self.remote_data_access.get_news()
+
+        self.nlg.news("past")
+        interest = self.nlg.article_interest(news_obj)
+        if interest is not None:
+            context['news'] = interest
 
         return context
 
@@ -137,7 +155,13 @@ class Alfred(threading.Thread):
         entities = request['entities']
         context = request['context']
 
-        context['greeting'] = self.nlg.greet()
+        by_name = False
+        ai = self._first_entity_value(entities, 'ai_entity')
+        if ai:
+            by_name = True
+
+
+        context['greeting'] = self.nlg.greet(by_name)
 
         return context
 
@@ -161,7 +185,7 @@ class Alfred(threading.Thread):
         entities = request['entities']
         context = request['context']
 
-        context['status'] = self.nlg.appreciation()
+        context['appreciation_response'] = self.nlg.appreciation()
 
         return context
 
@@ -169,7 +193,7 @@ class Alfred(threading.Thread):
         entities = request['entities']
         context = request['context']
 
-        context['status'] = self.nlg.acknowledge()
+        context['acknowledge_response'] = self.nlg.acknowledge()
 
         return context
 
@@ -195,9 +219,10 @@ class Alfred(threading.Thread):
             'getStatus': self._status,
             'getAppreciationResponse': self._appreciation_response,
             'getAcknowledgement': self._acknowledgement,
-            'getScore': self._get_score
+            'getScore': self._get_score,
+            'getNews': self._get_news
         }
-        self.client = Wit(access_token=WIT_TOKEN, actions=self.actions)        
+        self.client = Wit(access_token=WIT_TOKEN, actions=self.actions)  
 
         while 1:
             try:
