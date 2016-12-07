@@ -51,10 +51,22 @@ class Alfred(threading.Thread):
     def _first_entity_value(self, entities, entity):
         if entity not in entities:
             return None
-        val = entities[entity][0]['value']
-        if not val:
+        if 'value' in entities[entity][0]:
+            val = entities[entity][0]['value']
+            return val['value'] if isinstance(val, dict) else val
+        elif 'values' in entities[entity][0]:
+            return {"from": entities[entity][0]["from"]["value"], "to": entities[entity][0]["to"]["value"]}
+        else:
             return None
-        return val['value'] if isinstance(val, dict) else val
+        
+
+    # def _first_entity_value(self, entities, entity):
+    #     if entity not in entities:
+    #         return None
+    #     val = entities[entity][0]['value']
+    #     if not val:
+    #         return None
+    #     return val['value'] if isinstance(val, dict) else val
 
     def _if_wake_alfred(self, message):
         if "Alfred" in message:
@@ -119,16 +131,22 @@ class Alfred(threading.Thread):
         context = request['context']
 
         team = self._first_entity_value(entities, 'team')
-
-        # time_query = str(time).split('.')[0].replace(' ', 'T')    # Remove timezone
-        # encoded_date_obj = datetime.datetime.strptime(time_query.split('.')[0], '%Y-%m-%dT%H:%M:%S')
+        date = self._first_entity_value(entities, 'datetime')
+        if date != None:
+            if isinstance(date, dict):
+                date = date["from"]
+            date = str(date).split('.')[0].replace(' ', 'T')
+            date = datetime.datetime.strptime(date.split('.')[0], '%Y-%m-%dT%H:%M:%S')
 
         search_phrase = self.nlg.searching()
         self.last_ai_message = search_phrase
 
-        score_obj = self.remote_data_access.get_score(team)
+        score_obj = self.remote_data_access.get_score(date, team)
 
-        context['score'] = self.nlg.score(score_obj)
+        if not score_obj:
+            self.last_ai_message = "Sorry. I could not find any scores matching your request."
+        else:    
+            context['score'] = self.nlg.score(score_obj)
 
         return context
 
@@ -223,6 +241,7 @@ class Alfred(threading.Thread):
             'getNews': self._get_news
         }
         self.client = Wit(access_token=WIT_TOKEN, actions=self.actions)  
+
 
         while 1:
             try:

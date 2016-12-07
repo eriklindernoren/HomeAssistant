@@ -315,7 +315,11 @@ class NLG(object):
             loser = score_obj['home_team']
             l_score = home_score
 
-        ret_phrase = "The %s beat the %s by %i to %i" % (winner, loser, w_score, l_score)
+        finished = score_obj['finished']
+        if finished:
+            ret_phrase = "The %s beat the %s by %i to %i" % (winner, loser, w_score, l_score)
+        else:
+            ret_phrase = "The %s lead the %s by %i to %i" % (winner, loser, w_score, l_score)
 
         return ret_phrase
 

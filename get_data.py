@@ -11,6 +11,8 @@ class RemoteData(object):
         self.news_country_code = news_country_code
         self.weather_api_token = weather_api_token
 
+        self.last_score = {}
+
     def find_weather(self, time, location=None, request_type="currently"):
 
         forecasts = {
@@ -57,57 +59,68 @@ class RemoteData(object):
         
         return {}
 
-    def get_score(self, team="Celtics"):
+    def get_score(self, game_date, team="Celtics"):
 
-        team = team.capitalize()
-
-        eastern_time = datetime.now()
         season = "2016-2017-regular"
         format = "json"
 
-        counter = 2
         home_team = ""
-        home_abbr = ""
+        home_score = 0
         away_team = ""
-        away_abbr = ""
-        while home_abbr == "" and counter > 0:
-            eastern_time -= timedelta(days=1)
-            date = str(eastern_time).split(" ")[0].replace("-", "")
-            games_url = "https://www.mysportsfeeds.com/api/feed/pull/nba/%s/daily_game_schedule.%s?fordate=%s" % (season, format, date)
+        away_score = 0
+        finished = False
+
+        if game_date:
+            eastern_date = game_date - timedelta(hours=6)
+            date = str(eastern_date).split(" ")[0].replace("-", "")
+            games_url = "https://www.mysportsfeeds.com/api/feed/pull/nba/%s/scoreboard.%s?fordate=%s" % (season, format, date)
             r = requests.get(games_url, auth=(SPORTS_FEED_USER, SPORTS_FEED_PSWD))
             game_json = json.loads(r.text)
 
-            games = game_json['dailygameschedule']['gameentry']
+            games = game_json['scoreboard']['gameScore']
             if not games:
                 return None
 
             for game in games:
-                if game['homeTeam']['Name'] == team or game['awayTeam']['Name'] == team:
-                    home_team = game['homeTeam']['Name']
-                    home_abbr = game['homeTeam']['Abbreviation']
-                    away_team = game['awayTeam']['Name']
-                    away_abbr = game['awayTeam']['Abbreviation']
-                    break
+                if game['game']['homeTeam']['Name'] == team or game['game']['awayTeam']['Name'] == team:
+                    home_team = game['game']['homeTeam']['Name']
+                    home_score = int(game['homeScore'])
+                    away_team = game['game']['awayTeam']['Name']
+                    away_score = int(game['awayScore'])
+                    finished = (game["isCompleted"] == "true")
+        else:
+            counter = 2
+            d = datetime.now()
+            # Check the last three days
+            while home_team == "" and counter > 0:
+                d -= timedelta(days=1)
+                date = str(d).split(" ")[0].replace("-", "")
+                games_url = "https://www.mysportsfeeds.com/api/feed/pull/nba/%s/scoreboard.%s?fordate=%s" % (season, format, date)
+                r = requests.get(games_url, auth=(SPORTS_FEED_USER, SPORTS_FEED_PSWD))
+                game_json = json.loads(r.text)
 
-            counter -= 0
-        
-        # Couldn't find any game played in the last three days
-        if home_abbr == "":
+                games = game_json['scoreboard']['gameScore']
+                if not games:
+                    return None
+
+                for game in games:
+                    if game['game']['homeTeam']['Name'] == team or game['game']['awayTeam']['Name'] == team:
+                        home_team = game['game']['homeTeam']['Name']
+                        home_score = int(game['homeScore'])
+                        away_team = game['game']['awayTeam']['Name']
+                        away_score = int(game['awayScore'])
+                        finished = (game["isCompleted"] == "true")
+                        break
+
+                counter -= 0
+
+        if home_team == "":
             return None
         
-        game_id = "%s-%s-%s" % (date, away_abbr, home_abbr)
-        print game_id
-        score_url = "https://www.mysportsfeeds.com/api/feed/pull/nba/%s/game_boxscore.%s?gameid=%s&teamstats=PTS&playerstats=PTS" % (season, format, game_id)
-        print score_url
-        r = requests.get(score_url, auth=(SPORTS_FEED_USER, SPORTS_FEED_PSWD))
-        score = json.loads(r.text)
-
-        if not score:
-            return None
-
-        scores = score['gameboxscore']['quarterSummary']['quarterTotals']
-        score_data = {'home_team': home_team, 'home_score': scores['homeScore'], 'away_team': away_team, 'away_score': scores['awayScore']}
+        score_data = {'home_team': home_team, 'home_score': home_score, 'away_team': away_team, 'away_score': away_score, 'finished': finished}
         print score_data
+
+        self.last_score = score_data
 
         return score_data
 
@@ -152,3 +165,4 @@ class RemoteData(object):
         holidays = json.loads(r.text)
 
         return holidays
+
