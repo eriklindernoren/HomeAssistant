@@ -248,6 +248,13 @@ class Alfred(threading.Thread):
         return context
 
     def _sleep(self, request):
+        entities = request['entities']
+        context = request['context']
+
+        if not self._confident(entities):
+            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
+
         self.active = False
         context = {}
         context["bye"] = self.nlg.goodbye()
