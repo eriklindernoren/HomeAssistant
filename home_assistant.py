@@ -59,14 +59,14 @@ class Alfred(threading.Thread):
         else:
             return None
         
+    def _confident(self, entities):
+        if not "Intent" in entities:
+            return False
+        intent = entities['Intent'][0]['value']
+        confidence = float(entities['Intent'][0]['confidence'])
 
-    # def _first_entity_value(self, entities, entity):
-    #     if entity not in entities:
-    #         return None
-    #     val = entities[entity][0]['value']
-    #     if not val:
-    #         return None
-    #     return val['value'] if isinstance(val, dict) else val
+        print "Confidence (%s): %s" % (intent, confidence)
+        return (confidence > 0.5)
 
     def _if_wake_alfred(self, message):
         if "Alfred" in message:
@@ -97,6 +97,10 @@ class Alfred(threading.Thread):
     def _get_forecast(self, request):
         entities = request['entities']
         context = request['context']
+
+        if not self._confident(entities):
+            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
 
         weather_request = "currently"
 
@@ -130,6 +134,10 @@ class Alfred(threading.Thread):
         entities = request['entities']
         context = request['context']
 
+        if not self._confident(entities):
+            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
+
         team = self._first_entity_value(entities, 'team')
         date = self._first_entity_value(entities, 'datetime')
         if date != None:
@@ -154,6 +162,10 @@ class Alfred(threading.Thread):
         entities = request['entities']
         context = request['context']
 
+        if not self._confident(entities):
+            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
+
         # team = self._first_entity_value(entities, 'team')
 
         # time_query = str(time).split('.')[0].replace(' ', 'T')    # Remove timezone
@@ -173,6 +185,10 @@ class Alfred(threading.Thread):
         entities = request['entities']
         context = request['context']
 
+        if not self._confident(entities):
+            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
+
         by_name = False
         ai = self._first_entity_value(entities, 'ai_entity')
         if ai:
@@ -187,6 +203,10 @@ class Alfred(threading.Thread):
         entities = request['entities']
         context = request['context']
 
+        if not self._confident(entities):
+            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
+
         context['joke'] = self.nlg.joke()
 
         return context
@@ -194,6 +214,10 @@ class Alfred(threading.Thread):
     def _status(self, request):
         entities = request['entities']
         context = request['context']
+
+        if not self._confident(entities):
+            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
 
         context['status'] = self.nlg.personal_status()
 
@@ -203,6 +227,10 @@ class Alfred(threading.Thread):
         entities = request['entities']
         context = request['context']
 
+        if not self._confident(entities):
+            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
+
         context['appreciation_response'] = self.nlg.appreciation()
 
         return context
@@ -210,6 +238,10 @@ class Alfred(threading.Thread):
     def _acknowledgement(self, request):
         entities = request['entities']
         context = request['context']
+
+        if not self._confident(entities):
+            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
 
         context['acknowledge_response'] = self.nlg.acknowledge()
 
