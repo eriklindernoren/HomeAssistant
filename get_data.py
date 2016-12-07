@@ -3,8 +3,7 @@ from pytz import timezone
 from datetime import datetime, timedelta
 
 SPORTS_FEED_USER = "eriklindernoren"
-# SPORTS_FEED_PSWD = os.environ['SPORTS_FEED_PSWD']
-SPORTS_FEED_PSWD = "sportsfeed"
+SPORTS_FEED_PSWD = os.environ['SPORTS_FEED_PSWD']
 
 
 class RemoteData(object):
