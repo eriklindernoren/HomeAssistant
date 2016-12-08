@@ -1,11 +1,11 @@
 <html>
 <head>
-	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='weather_icons/iconvault-preview.css') }}">
 	<!-- Raleway -->
 	<link href='https://fonts.googleapis.com/css?family=Raleway:400,300,500' rel='stylesheet' type='text/css'>
 </head>
 <body>
-
 
 	<p if="greeting">Hello! I'm Al_fred.</p>
 
@@ -19,9 +19,61 @@
 		<p id="ai_message"></p>
 	</div>	
 
+	<div id="status">
+		<p>Listening</p>
+	</div>
+
+	<div id="forecast">
+		<div class="weather_obj">
+			<i class="weather_icon icon-sun"></i>
+			<div class="temp_obj">
+				<p class="temp">14</p>
+				<p class="temp_label">C&deg;</p>
+			</div>
+			<p class="day">Mon</p>
+			<p class="desc"Cloudy</p>
+		</div>
+		<div class="weather_obj">
+			<i class="weather_icon icon-sun"></i>
+			<div class="temp_obj">
+				<p class="temp">23</p>
+				<p class="temp_label">C&deg;</p>
+			</div>
+			<p class="day">Tue</p>
+			<p class="desc"Cloudy</p>
+		</div>
+		<div class="weather_obj">
+			<i class="weather_icon icon-basecloud"></i>
+			<div class="temp_obj">
+				<p class="temp">14</p>
+				<p class="temp_label">C&deg;</p>
+			</div>
+			<p class="day">Wed</p>
+			<p class="desc"Cloudy</p>
+		</div>
+		<div class="weather_obj">
+			<i class="weather_icon icon-cloud"></i>
+			<div class="temp_obj">
+				<p class="temp">19</p>
+				<p class="temp_label">C&deg;</p>
+			</div>
+			<p class="day">Thu</p>
+			<p class="desc"Cloudy</p>
+		</div>
+		<div class="weather_obj">
+			<i class="weather_icon icon-sunrise"></i>
+			<div class="temp_obj">
+				<p class="temp">15</p>
+				<p class="temp_label">C&deg;</p>
+			</div>
+			<p class="day">Fri</p>
+			<p class="desc"Cloudy</p>
+		</div>
+	</div>
+
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	<script src="https://code.responsivevoice.org/responsivevoice.js"></script>
-	<script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 </body>
 </html>

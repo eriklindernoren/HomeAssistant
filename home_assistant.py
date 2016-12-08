@@ -22,25 +22,26 @@ class Alfred(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.nlg = NLG(user_name=NAME)
-        self.remote_data_access = RemoteData(weather_api_token=DARKSKY_TOKEN)
+        self.remote_data = RemoteData(weather_api_token=DARKSKY_TOKEN)
         self.audio_handler = AudioHandler(debug=True)
         self.session_id = uuid.uuid1()
         self.context = {}
-        self.last_ai_message = ""
-        self.last_user_message = ""
-        self.talking = False;
-        self.active = True
+        self.ai_message = ""
+        self.user_message = ""
+        
+        self.talking = False    # When Alfred is talking
+        self.active = False     # When the user has activated Alfred
 
     def close(self):
         self.nlg.close()
         sys.exit(0)
 
     def get_ai_message(self):
-        message = self.last_ai_message
+        message = self.ai_message
         return message
 
     def get_user_message(self):
-        message = self.last_user_message
+        message = self.user_message
         return message
 
     def _active_timeout(self, signum, frame):
@@ -90,8 +91,8 @@ class Alfred(threading.Thread):
 
     def _send(self, request, response):
         message = response['text']
-        if not self.talking:
-            self.last_ai_message = message
+        if not self.talking and message not in self.context.values():
+            self.ai_message = message
             print "Alfred:", message
 
     def _get_forecast(self, request):
@@ -99,7 +100,7 @@ class Alfred(threading.Thread):
         context = request['context']
 
         if not self._confident(entities):
-            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
         weather_request = "currently"
@@ -123,8 +124,8 @@ class Alfred(threading.Thread):
         encoded_date_obj = datetime.datetime.strptime(time_query.split('.')[0], '%Y-%m-%dT%H:%M:%S')
 
         search_phrase = self.nlg.searching()
-        self.last_ai_message = search_phrase
-        weather_obj = self.remote_data_access.find_weather(time_query, loc, weather_request)
+        self.ai_message = search_phrase
+        weather_obj = self.remote_data.find_weather(time_query, loc, weather_request)
 
         context['forecast'] = self.nlg.weather(weather_obj, encoded_date_obj)
 
@@ -135,7 +136,7 @@ class Alfred(threading.Thread):
         context = request['context']
 
         if not self._confident(entities):
-            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
         team = self._first_entity_value(entities, 'team')
@@ -147,12 +148,12 @@ class Alfred(threading.Thread):
             date = datetime.datetime.strptime(date.split('.')[0], '%Y-%m-%dT%H:%M:%S')
 
         search_phrase = self.nlg.searching()
-        self.last_ai_message = search_phrase
+        self.ai_message = search_phrase
 
-        score_obj = self.remote_data_access.get_score(date, team)
+        score_obj = self.remote_data.get_score(date, team)
 
         if not score_obj:
-            self.last_ai_message = "Sorry. I could not find any scores matching your request."
+            self.ai_message = "Sorry. I could not find any scores matching your request."
         else:    
             context['score'] = self.nlg.score(score_obj)
 
@@ -163,7 +164,7 @@ class Alfred(threading.Thread):
         context = request['context']
 
         if not self._confident(entities):
-            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
         # team = self._first_entity_value(entities, 'team')
@@ -171,7 +172,7 @@ class Alfred(threading.Thread):
         # time_query = str(time).split('.')[0].replace(' ', 'T')    # Remove timezone
         # encoded_date_obj = datetime.datetime.strptime(time_query.split('.')[0], '%Y-%m-%dT%H:%M:%S')
         
-        news_obj = self.remote_data_access.get_news()
+        news_obj = self.remote_data.get_news()
 
         self.nlg.news("past")
         interest = self.nlg.article_interest(news_obj)
@@ -186,7 +187,7 @@ class Alfred(threading.Thread):
         context = request['context']
 
         if not self._confident(entities):
-            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
         by_name = False
@@ -204,7 +205,7 @@ class Alfred(threading.Thread):
         context = request['context']
 
         if not self._confident(entities):
-            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
         context['joke'] = self.nlg.joke()
@@ -216,7 +217,7 @@ class Alfred(threading.Thread):
         context = request['context']
 
         if not self._confident(entities):
-            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
         context['status'] = self.nlg.personal_status()
@@ -228,7 +229,7 @@ class Alfred(threading.Thread):
         context = request['context']
 
         if not self._confident(entities):
-            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
         context['appreciation_response'] = self.nlg.appreciation()
@@ -240,7 +241,7 @@ class Alfred(threading.Thread):
         context = request['context']
 
         if not self._confident(entities):
-            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
         context['acknowledge_response'] = self.nlg.acknowledge()
@@ -252,7 +253,7 @@ class Alfred(threading.Thread):
         context = request['context']
 
         if not self._confident(entities):
-            self.last_ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
         self.active = False
@@ -279,16 +280,17 @@ class Alfred(threading.Thread):
             'getScore': self._get_score,
             'getNews': self._get_news
         }
+
         self.client = Wit(access_token=WIT_TOKEN, actions=self.actions)  
 
-
+        # Main loop
         while 1:
             try:
                 if not self.talking:
                     input_text = self.audio_handler.get_audio_as_text()
                     self._if_wake_alfred(input_text)
                     if self.active:
-                        self.last_user_message = input_text
+                        self.user_message = input_text
                         self._converse(self.context, input_text)
                 else:
                     time.sleep(0.2)
@@ -307,22 +309,9 @@ def handleTalkingStatus():
     talking = request.args.get('talking', 0, type=int)
     talking = (talking == 1)
     alfred.talking = talking
-    print "Talking set to:", talking
     return jsonify(success="true")
 
-# @app.route('/_handle_text', methods= ['GET'])
-# def handleText():
-#     input_text = request.args.get('text', 0, type=str)
-#     print input_text
-#     alfred._if_wake_alfred(input_text, alfred.context)
-#     if 'active' in alfred.context:
-#         alfred.last_user_message = input_text
-#         alfred._converse(alfred.context, input_text)
-#     user_message = alfred.get_user_message()
-#     ai_message = alfred.get_ai_message()
-#     return jsonify(ai_message=ai_message, user_message=user_message)
-
-@app.route('/_get_message', methods= ['GET'])
+@app.route('/_messages', methods= ['GET'])
 def getMessage():
     user_message = alfred.get_user_message()
     ai_message = alfred.get_ai_message()
