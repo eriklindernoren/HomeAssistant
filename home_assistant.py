@@ -63,6 +63,8 @@ class Alfred(threading.Thread):
     def _confident(self, entities):
         if not "Intent" in entities:
             return False
+
+        print entities
         intent = entities['Intent'][0]['value']
         confidence = float(entities['Intent'][0]['confidence'])
 
@@ -296,6 +298,13 @@ class Alfred(threading.Thread):
                     time.sleep(0.2)
             except Exception as e:
                 continue
+
+
+def signal_handler(signal, frame):
+    print "Killing active Python processes"
+    os.system("ps ax|grep home_assistant.py|cut -c1-5|xargs kill -9")
+    sys.exit(0)
+signal.signal(signal.SIGINT, signal_handler)
 
 
 alfred = Alfred()

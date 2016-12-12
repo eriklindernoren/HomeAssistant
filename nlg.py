@@ -75,10 +75,16 @@ class NLG(object):
             "I will see what I can find",
             "Let me look that up for you",
             "Hold on a second and let me look it up",
-            "Just a second sir"
+            "Just a second",
+            "Give me a moment",
+            "Hold on a second",
+            "I will look that up",
+            "Let me see what I can find"
         ]
 
-        return random.choice(searching_phrases)
+        phrase = random.choice(searching_phrases)
+        phrase += " sir." if random.randint(0, 1) == 1 else "."
+        return phrase
 
     def user_status(self, type='positive', attribute=None):
 
@@ -129,6 +135,7 @@ class NLG(object):
             "I am doing well",
             "Great, thanks for asking",
             "I am doing great",
+            "I am awesome."
         ]
 
         negative_status = [
@@ -331,8 +338,8 @@ class NLG(object):
             "You are welcome",
             "Sure, no problem",
             "Of course",
-            "Don not mention it",
-            "Don not worry about it"
+            "Do not mention it",
+            "Do not worry about it"
         ]
 
         return random.choice(phrases)

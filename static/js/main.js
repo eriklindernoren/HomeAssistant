@@ -26,12 +26,12 @@ function voiceEndCallback() {
 }
 
 var speech_parameters = {
-	onstart: voiceStartCallback,
 	onend: voiceEndCallback
 }
 
 var speak = function(new_message){
 	console.log("New speech: " + new_message);
+	voiceStartCallback();
 	responsiveVoice.speak(new_message, "UK English Male", speech_parameters);
 }
 
@@ -50,11 +50,15 @@ var updateAIMessage = function(new_message){
 }
 
 var updateTalkingStatus = function(talking){
+	src = ""
 	if(talking){
-		$("#status p").text("Talking");
+		var src = $SCRIPT_ROOT + "/static/images/speakers.png";
 	}else{
-		$("#status p").text("Listening");
+		var src = $SCRIPT_ROOT + "/static/images/microphone.png";
 	}
+
+	$("#status").attr("src", src);
+
 	console.log("Talking: " + talking);
 }
 
