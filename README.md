@@ -1,4 +1,4 @@
-# AI_fred 🤖 
+# AIfred 🤖 
 
 ## The artificial, ever helpful, butler.
 
