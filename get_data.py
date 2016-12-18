@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
 import requests, os, json, feedparser, sys
 from pytz import timezone
 from datetime import datetime, timedelta
+from geopy.geocoders import Nominatim
 
 SPORTS_FEED_USER = "eriklindernoren"
 SPORTS_FEED_PSWD = os.environ['SPORTS_FEED_PSWD']
@@ -10,7 +12,7 @@ class RemoteData(object):
     def __init__(self, weather_api_token, news_country_code='us'):
         self.news_country_code = news_country_code
         self.weather_api_token = weather_api_token
-
+        self.geolocator = Nominatim()
         self.last_score = {}
 
     def find_weather(self, time, location=None, request_type="currently"):
@@ -22,13 +24,15 @@ class RemoteData(object):
             "currently" : "current_forecast"
         }
 
-        loc_obj = location
-        if not loc_obj:
+        if location:
+            loc_obj = self.geolocator.geocode(location)
+            lat = loc_obj.latitude
+            lon = loc_obj.longitude
+        else:
             loc_obj = self.get_location()
+            lat = loc_obj['lat']
+            lon = loc_obj['lon']
         time_obj = time
-
-        lat = loc_obj['lat']
-        lon = loc_obj['lon']
 
         units = 'si'
         request_types = ['minutely','currently','hourly','daily','alerts','flags']
@@ -43,19 +47,20 @@ class RemoteData(object):
         forecast_request = forecasts[request_type]
 
         if forecast_request == "current_forecast":
-            temperature = int(weather_json[request_type]['temperature'])
-            current_forecast = weather_json[request_type]['summary']
-            return {'forecast_type': 'current', 'temperature': temperature, 'current_forecast': current_forecast}
+            apparent_temp = weather_json[request_type]['apparentTemperature']
+            temperature = weather_json[request_type]['temperature']
+            summary = weather_json[request_type]['summary']
+            return {'forecast_type': 'current', 'location': location, 'apparent_temperature': apparent_temp, 'temperature': temperature, 'summary': summary}
         elif forecast_request == "daily_forecast":
             summary = weather_json[request_type]['data'][0]['summary']
             temp_min = weather_json[request_type]['data'][0]['temperatureMin']
             temp_max = weather_json[request_type]['data'][0]['temperatureMax']
-            return {'forecast_type': 'day', 'summary': summary, 'temp_min': temp_min, 'temp_max': temp_max}
+            return {'forecast_type': 'day', 'location': location, 'summary': summary, 'temp_min': temp_min, 'temp_max': temp_max}
         elif forecast_request == "hourly_forecast":
             hour = int(time_obj.split('T')[1].split(':')[0])
             temperature = weather_json[request_type]['data'][hour]['temperature']
             summary = weather_json[request_type]['data'][hour]['summary']
-            return {'forecast_type': 'hour', 'summary': summary, 'temperature': temperature} 
+            return {'forecast_type': 'hour', 'location': location, 'summary': summary, 'temperature': temperature} 
         
         return {}
 

@@ -1,4 +1,4 @@
-# AIfred 🤖 
+# Alfred 🤖 
 
 ## The artificial, ever helpful, butler.
 

@@ -2,9 +2,9 @@
 //  				  Speech
 // ------------------------------------------------
 
-// Let Alfred know he's whether speaking
+// Let Alfred know whether he's speaking
 var setTalkingStatus = function(value) {
-	var url = window.location.href + "_talking";
+	var url = $SCRIPT_ROOT + "/_talking";
 	$.getJSON(url, {
 		"talking": value,
 	}, function(data) {
@@ -76,27 +76,25 @@ var last_user_message = ""
 setInterval(                               
   function()
   {
-  	var url = window.location.href + '_messages';
-     $.getJSON(
-        url,
-        {},
-        function(data)
-        {
-        	if(!talking){
-	        	if(last_ai_message != data.ai_message){
+ 	if(!talking){
+  		var url = $SCRIPT_ROOT + '/_messages';
+	    $.getJSON(
+	        url,
+	        {},
+	        function(data){
+	        	if(data.ai_message && last_ai_message != data.ai_message){
 	        		last_ai_message = data.ai_message;
 	        		updateAIMessage(last_ai_message) 
 	        		speak(last_ai_message);
         		}
-	        	if(last_user_message != data.user_message){
+	        	if(data.user_message && last_user_message != data.user_message){
 	        		last_user_message = data.user_message;
 	        		updateUserMessage(last_user_message);
 	        	}
-        	}
-
-        });
+        	});
+ 	}
   },
-  50);
+  100);
 });
 
 console.log("Loaded main.js");

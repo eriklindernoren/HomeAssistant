@@ -1,12 +1,11 @@
-import sys, os, signal, datetime, threading, logging, time
+# -*- coding: utf-8 -*-
+import sys, os, signal, datetime, threading, logging, time, uuid
 from flask import Flask, render_template, jsonify, request
 from wit import Wit
 from os import system
 from get_data import RemoteData
 from audio_handler import AudioHandler
 from nlg import NLG
-import uuid
-
 
 app = Flask(__name__)
 
@@ -69,7 +68,7 @@ class Alfred(threading.Thread):
         confidence = float(entities['Intent'][0]['confidence'])
 
         print "Confidence (%s): %s" % (intent, confidence)
-        return (confidence > 0.5)
+        return (confidence > 0.8)
 
     def _if_wake_alfred(self, message):
         if "Alfred" in message:
@@ -250,6 +249,19 @@ class Alfred(threading.Thread):
 
         return context
 
+
+    def _identification(self, request):
+        entities = request['entities']
+        context = request['context']
+
+        if not self._confident(entities):
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
+
+        context['identification'] = self.nlg.identification()
+
+        return context
+
     def _sleep(self, request):
         entities = request['entities']
         context = request['context']
@@ -269,7 +281,6 @@ class Alfred(threading.Thread):
     # ---------
 
     def run(self):
-
         self.actions = {
             'send': self._send,
             'getForecast': self._get_forecast,
@@ -280,7 +291,8 @@ class Alfred(threading.Thread):
             'getAppreciationResponse': self._appreciation_response,
             'getAcknowledgement': self._acknowledgement,
             'getScore': self._get_score,
-            'getNews': self._get_news
+            'getNews': self._get_news,
+            'identification': self._identification
         }
 
         self.client = Wit(access_token=WIT_TOKEN, actions=self.actions)  
@@ -310,18 +322,18 @@ signal.signal(signal.SIGINT, signal_handler)
 alfred = Alfred()
 
 @app.route("/")
-def startAlfred():
-    return render_template('alfred.html')
+def index():
+    return render_template('index.html')
 
 @app.route('/_talking', methods= ['GET'])
-def handleTalkingStatus():
+def handle_talking_status():
     talking = request.args.get('talking', 0, type=int)
     talking = (talking == 1)
     alfred.talking = talking
     return jsonify(success="true")
 
 @app.route('/_messages', methods= ['GET'])
-def getMessage():
+def get_message():
     user_message = alfred.get_user_message()
     ai_message = alfred.get_ai_message()
     return jsonify(ai_message=ai_message, user_message=user_message)

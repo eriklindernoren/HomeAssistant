@@ -12,19 +12,17 @@
 		<img src="{{ url_for('static', filename='images/eyeglasses.png') }}">
 	</div>
 
-	<div id="user">
+	<div id="messages">
 		<p class="id">User</p>
-		<p id="user_message"></p>
+		<p class="message" id="user_message"> - </p>
+		<p class="id">Alfred</p>
+		<p class="message" id="ai_message"> - </p>
 	</div>
 
-	<div id="alfred">
-		<p class="id">Alfred</p>
-		<p id="ai_message"></p>
-	</div>	
 
 	<img id="status" src="{{ url_for('static', filename='images/microphone.png') }}"></img>
 
-	<div id="forecast">
+<!-- 	<div id="forecast">
 		<div class="weather_obj">
 			<i class="weather_icon icon-sun"></i>
 			<div class="temp_obj">
@@ -70,7 +68,7 @@
 			<p class="day">Fri</p>
 			<p class="desc"Cloudy</p>
 		</div>
-	</div>
+	</div> -->
 
 	<script type=text/javascript>
   		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};

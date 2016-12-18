@@ -80,47 +80,32 @@ body,html{
 	padding: 0;
 }
 
-
-#user {
+#messages{
 	position: absolute;
+	top: 50%;
 	left: 50%;
-	top: 20%;
 	transform: translateX(-50%) translateY(-50%);
-	width: 60%
 }
 
-.id {
-	position: absolute;
-	top: 0;
-	left: 50%;
-	transform: translateX(-50%);
+#messages p{
+	width: 100% !important;
+	text-align: center;
+}
+
+#messages .id {
+	margin: 0;
 	font-size: 16px;
 	text-align: center;
 	color: rgb(200,200,200);
 }
 
-#user_message {
-	position: absolute;
-	top: 30px;
-	left: 50%;
-	transform: translateX(-50%);
-	font-size: 24px;
+#messages .message{
+	font-size: 30px;
+	line-height: 70px;
 	text-align: center;
 }
 
-#alfred {
-	position: absolute;
-	left: 50%;
-	top: 40%;
-	transform: translateX(-50%) translateY(-50%);
-	width: 80%;
-}
-
-#ai_message {
-	position: absolute;
-	top: 0px;
-	left: 50%;
-	transform: translateX(-50%);
+#messages .message:nth-child(1) {
 	font-size: 40px;
 	line-height: 70px;
 	text-align: center;
