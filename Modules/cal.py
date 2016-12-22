@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 ICLOUD_MAIL = os.environ['ICLOUD_MAIL']
 ICLOUD_PSWD = os.environ['ICLOUD_PSWD']
 
-
 class Calendar(object):
 	def __init__(self):
 		api = PyiCloudService(ICLOUD_MAIL, ICLOUD_PSWD)
@@ -22,11 +21,9 @@ class Calendar(object):
 			location = event['location']
 			date = event['startDate'][0]
 			hour = str(event['startDate'][4])
+			hour = "0" + hour if len(hour)==1 else hour
 			minute = str(event['startDate'][5])
-			if len(hour)==1:
-				hour = "0" + hour
-			if len(minute)==1:
-				minute = "0" + minute
+			minute = "0" + minute if len(minute)==1 else minute
 			start_time = "%s-%s:%s" % (date, hour, minute)
 			duration = event['duration']
 			events.append({'title':title, 'location':location, 'start_time':start_time, 'duration': duration})

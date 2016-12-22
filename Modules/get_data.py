@@ -8,18 +8,12 @@ from pyicloud import PyiCloudService
 SPORTS_FEED_USER = "eriklindernoren"
 SPORTS_FEED_PSWD = os.environ['SPORTS_FEED_PSWD']
 
-ICLOUD_MAIL = os.environ['ICLOUD_MAIL']
-ICLOUD_PSWD = os.environ['ICLOUD_PSWD']
-
-
 class RemoteData(object):
     def __init__(self, weather_api_token, news_country_code='us'):
         self.news_country_code = news_country_code
         self.weather_api_token = weather_api_token
         self.geolocator = Nominatim()
         self.last_score = {}
-        print "Setting up iCloud connection"
-        self.pyicloud_api = PyiCloudService(ICLOUD_MAIL, ICLOUD_PSWD)
 
     def find_weather(self, time, location=None, request_type="currently"):
 
