@@ -5,10 +5,10 @@ from os import system
 
 class AudioHandler(object):
 	def __init__(self, energy_threshold=None, debug=True):
-		self.energy_threshold = energy_threshold
 		self.debug = debug
 		self.mic = sr.Microphone()
 		self.recognizer = sr.Recognizer()
+		self.energy_threshold = energy_threshold
 		if self.energy_threshold:
 			self.recognizer.energy_threshold = self.energy_threshold
 
@@ -16,7 +16,8 @@ class AudioHandler(object):
 		with self.mic as source:
 			if not self.energy_threshold:
 				self.recognizer.adjust_for_ambient_noise(source)
-			print("Talk to Alfred...")
+			if self.debug:
+				print("Talk to Alfred...")
 			audio = self.recognizer.listen(source)
 			text = self.recognizer.recognize_google(audio)
 			word_count = len(text.split(" "))

@@ -1,0 +1,7 @@
+flask
+wit
+feedparser
+geopy
+SpeechRecognition
+py4j
+pyaudio

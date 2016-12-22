@@ -39,6 +39,16 @@ var speak = function(new_message){
 //  				Visuals
 // ------------------------------------------------
 
+var updateAlarms = function(alarms){
+	$("#alarms").empty();
+	var i;
+	for(i = 0; i < alarms.length; i++){
+		var alarm = alarms[i];
+		console.log("Alarm: " + alarm.date + " " + alarm.time);
+		$("#alarms").append("<p class='alarm'>" + alarm.date + " " + alarm.time + "</p>");
+	}
+}
+
 var updateUserMessage = function(new_message){
 	console.log("User message: " + new_message);
 	$("#user_message").text(new_message);
@@ -73,6 +83,7 @@ $(document).ready(function () {
 
 var last_ai_message = ""
 var last_user_message = ""
+var last_alarms = null
 setInterval(                               
   function()
   {
@@ -90,6 +101,10 @@ setInterval(
 	        	if(data.user_message && last_user_message != data.user_message){
 	        		last_user_message = data.user_message;
 	        		updateUserMessage(last_user_message);
+	        	}
+	        	if(data.alarms && !_.isEqual(last_alarms, data.alarms)){
+	        		last_alarms = data.alarms;
+	        		updateAlarms(data.alarms);
 	        	}
         	});
  	}

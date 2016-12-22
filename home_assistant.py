@@ -27,6 +27,8 @@ class Alfred(threading.Thread):
         self.context = {}
         self.ai_message = ""
         self.user_message = ""
+
+        self._active_alarms = []
         
         self.talking = False    # When Alfred is talking
         self.active = False     # When the user has activated Alfred
@@ -38,6 +40,10 @@ class Alfred(threading.Thread):
     def get_ai_message(self):
         message = self.ai_message
         return message
+
+    def get_alarms(self):
+        alarms = self._active_alarms
+        return alarms
 
     def get_user_message(self):
         message = self.user_message
@@ -60,15 +66,22 @@ class Alfred(threading.Thread):
             return None
         
     def _confident(self, entities):
-        if not "Intent" in entities:
+        if not entities:
             return False
 
-        print entities
+        if not "Intent" in entities:
+             # Trust that entities confidence is high
+            return True
+
         intent = entities['Intent'][0]['value']
         confidence = float(entities['Intent'][0]['confidence'])
-
         print "Confidence (%s): %s" % (intent, confidence)
+
         return (confidence > 0.8)
+        
+        
+
+
 
     def _if_wake_alfred(self, message):
         if "Alfred" in message:
@@ -124,10 +137,11 @@ class Alfred(threading.Thread):
 
         encoded_date_obj = datetime.datetime.strptime(time_query.split('.')[0], '%Y-%m-%dT%H:%M:%S')
 
-        search_phrase = self.nlg.searching()
-        self.ai_message = search_phrase
+        # search_phrase = self.nlg.searching()
+        # self.ai_message = search_phrase
         weather_obj = self.remote_data.find_weather(time_query, loc, weather_request)
 
+        context = {}
         context['forecast'] = self.nlg.weather(weather_obj, encoded_date_obj)
 
         return context
@@ -148,11 +162,12 @@ class Alfred(threading.Thread):
             date = str(date).split('.')[0].replace(' ', 'T')
             date = datetime.datetime.strptime(date.split('.')[0], '%Y-%m-%dT%H:%M:%S')
 
-        search_phrase = self.nlg.searching()
-        self.ai_message = search_phrase
+        # search_phrase = self.nlg.searching()
+        # self.ai_message = search_phrase
 
         score_obj = self.remote_data.get_score(date, team)
 
+        context = {}
         if not score_obj:
             self.ai_message = "Sorry. I could not find any scores matching your request."
         else:    
@@ -174,7 +189,7 @@ class Alfred(threading.Thread):
         # encoded_date_obj = datetime.datetime.strptime(time_query.split('.')[0], '%Y-%m-%dT%H:%M:%S')
         
         news_obj = self.remote_data.get_news()
-
+        context = {}
         self.nlg.news("past")
         interest = self.nlg.article_interest(news_obj)
         if interest is not None:
@@ -196,7 +211,7 @@ class Alfred(threading.Thread):
         if ai:
             by_name = True
 
-
+        context = {}
         context['greeting'] = self.nlg.greet(by_name)
 
         return context
@@ -209,6 +224,7 @@ class Alfred(threading.Thread):
             self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
+        context = {}
         context['joke'] = self.nlg.joke()
 
         return context
@@ -221,6 +237,7 @@ class Alfred(threading.Thread):
             self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
+        context = {}
         context['status'] = self.nlg.personal_status()
 
         return context
@@ -233,8 +250,34 @@ class Alfred(threading.Thread):
             self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
+        context = {}
         context['appreciation_response'] = self.nlg.appreciation()
 
+        return context
+
+    def _set_alarm_clock(self, request):
+        entities = request['entities']
+        context = request['context']
+
+        if not self._confident(entities):
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
+
+        datetime = self._first_entity_value(entities, 'datetime')
+
+        context = {}
+        if not datetime:
+            context['alarm_time_missing'] = self.nlg.alarm_info(None, None)
+            print "Alarm: %s" % (context)
+            return context
+        
+        date = datetime.split("T")[0]
+        time = ":".join(datetime.split("T")[1].split(".")[0].split(":")[:-1])
+        self._active_alarms.append({"date": date, "time": time})
+        print "date: %s, time: %s" % (date, time)
+        context['alarm_confirmation'] = self.nlg.alarm_info(date, time)
+
+        print "Alarm: %s" % (context)
         return context
 
     def _acknowledgement(self, request):
@@ -245,6 +288,7 @@ class Alfred(threading.Thread):
             self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
+        context = {}
         context['acknowledge_response'] = self.nlg.acknowledge()
 
         return context
@@ -258,6 +302,7 @@ class Alfred(threading.Thread):
             self.ai_message = "I'm sorry. Do you mind repeating that?"
             return context
 
+        context = {}
         context['identification'] = self.nlg.identification()
 
         return context
@@ -292,24 +337,26 @@ class Alfred(threading.Thread):
             'getAcknowledgement': self._acknowledgement,
             'getScore': self._get_score,
             'getNews': self._get_news,
-            'identification': self._identification
+            'identification': self._identification,
+            'setAlarm': self._set_alarm_clock
         }
 
         self.client = Wit(access_token=WIT_TOKEN, actions=self.actions)  
 
         # Main loop
         while 1:
-            try:
-                if not self.talking:
-                    input_text = self.audio_handler.get_audio_as_text()
-                    self._if_wake_alfred(input_text)
-                    if self.active:
-                        self.user_message = input_text
-                        self._converse(self.context, input_text)
-                else:
-                    time.sleep(0.2)
-            except Exception as e:
-                continue
+            # try:
+            if not self.talking:
+                # input_text = self.audio_handler.get_audio_as_text()
+                input_text = raw_input("Enter message: ") # Testing 
+                self._if_wake_alfred(input_text)
+                if self.active:
+                    self.user_message = input_text
+                    self._converse(self.context, input_text)
+            else:
+                time.sleep(0.2)
+            # except Exception as e:
+            #     continue
 
 
 def signal_handler(signal, frame):
@@ -336,7 +383,8 @@ def handle_talking_status():
 def get_message():
     user_message = alfred.get_user_message()
     ai_message = alfred.get_ai_message()
-    return jsonify(ai_message=ai_message, user_message=user_message)
+    alarms = alfred.get_alarms()
+    return jsonify(ai_message=ai_message, user_message=user_message, alarms=alarms)
 
 if __name__ == "__main__":
     alfred.start()

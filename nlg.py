@@ -21,6 +21,32 @@ TextSpec = gateway.jvm.TextSpec
 Tense = gateway.jvm.Tense
 Form = gateway.jvm.Form
 
+date_endings = {
+    "1": "1st",
+    "2": "2nd",
+    "3": "3rd",
+    "4": "4th",
+    "5": "5th",
+    "6": "6th",
+    "7": "7th",
+    "8": "8th",
+    "9": "9th"
+}
+
+months = {
+    "01": "January",
+    "02": "February",
+    "03": "Mars",
+    "04": "April",
+    "05": "May",
+    "06": "June",
+    "07": "July",
+    "08": "August",
+    "09": "September",
+    "10": "October",
+    "11": "November",
+    "12": "December"
+}
 
 class NLG(object):
 
@@ -139,6 +165,28 @@ class NLG(object):
             "Goodbye sir."
         ]
         return random.choice(bye)
+
+    def alarm_info(self, date, time):
+        
+        time_missing = [
+            "What time do you want me to set the alarm for?",
+            "Sure! When?",
+            "Just say the time, sir."
+            "Of course, when do you want me to set the alarm for?",
+            "With pleasure. What time do you want me to set the alarm for?",
+        ]
+        if not date:
+            return random.choice(time_missing)
+
+        month = months[date.split("-")[1]]
+        day_first_digit = date.split("-")[-1][0]
+        day_second_digit = date.split("-")[-1][1]
+        day = ""
+        if day_first_digit != "0":
+            day = day_first_digit
+        day += date_endings[day_second_digit]
+
+        return "The alarm is set for %s on the %s of %s" % (time, day, month)
 
     def personal_status(self, status_type=None):
         positive_status=[

@@ -19,6 +19,8 @@
 		<p class="message" id="ai_message"> - </p>
 	</div>
 
+	<div id="alarms"></div>
+
 
 	<img id="status" src="{{ url_for('static', filename='images/microphone.png') }}"></img>
 
@@ -75,6 +77,7 @@
 	</script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	<script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+	<script src="{{ url_for('static', filename='js/lodash.core.js') }}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 </body>

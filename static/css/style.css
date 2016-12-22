@@ -20,6 +20,17 @@ body,html{
   font-style: normal;
 }
 
+#alarms {
+	position: absolute;
+	left: 50px;
+	top: 50%;
+	transform: translateY(-50%));
+}
+
+.alarm {
+	width: 100%;
+}
+
 #forecast {
 	position: absolute;
 	right: 50px;
