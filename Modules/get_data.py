@@ -3,9 +3,13 @@ import requests, os, json, feedparser, sys
 from pytz import timezone
 from datetime import datetime, timedelta
 from geopy.geocoders import Nominatim
+from pyicloud import PyiCloudService
 
 SPORTS_FEED_USER = "eriklindernoren"
 SPORTS_FEED_PSWD = os.environ['SPORTS_FEED_PSWD']
+
+ICLOUD_MAIL = os.environ['ICLOUD_MAIL']
+ICLOUD_PSWD = os.environ['ICLOUD_PSWD']
 
 
 class RemoteData(object):
@@ -14,6 +18,8 @@ class RemoteData(object):
         self.weather_api_token = weather_api_token
         self.geolocator = Nominatim()
         self.last_score = {}
+        print "Setting up iCloud connection"
+        self.pyicloud_api = PyiCloudService(ICLOUD_MAIL, ICLOUD_PSWD)
 
     def find_weather(self, time, location=None, request_type="currently"):
 

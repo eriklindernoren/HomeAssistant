@@ -3,6 +3,7 @@ import sys, os, signal, datetime, threading, logging, time, uuid
 from flask import Flask, render_template, jsonify, request
 from wit import Wit
 from os import system
+sys.path.insert(0, './Modules')
 from get_data import RemoteData
 from audio_handler import AudioHandler
 from nlg import NLG
