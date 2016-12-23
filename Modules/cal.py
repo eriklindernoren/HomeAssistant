@@ -9,14 +9,12 @@ class Calendar(object):
 	def __init__(self):
 		api = PyiCloudService(ICLOUD_MAIL, ICLOUD_PSWD)
 		api.calendar.refresh_client()
-		from_dt = datetime.now()
-		to_dt = from_dt + timedelta(days=30)
-		event_day =  api.calendar.events(from_dt, to_dt)
-		self._calendar = self.setup_calendar(event_day)
+		self._calendar = None
+		self.setup_calendar(datetime.now(), datetime.now() + timedelta(days=30))
 
-	def setup_calendar(self, calendar):
+	def setup_calendar(self, date_from, date_to):
 		events = []
-		for event in calendar:
+		for event in api.calendar.events(from_dt, to_dt):
 			title = event['title']
 			location = event['location']
 			date = event['startDate'][0]
@@ -27,7 +25,7 @@ class Calendar(object):
 			start_time = "%s-%s:%s" % (date, hour, minute)
 			duration = event['duration']
 			events.append({'title':title, 'location':location, 'start_time':start_time, 'duration': duration})
-		return sorted(events, key=lambda k: k['start_time'])
+		self._calendar = sorted(events, key=lambda k: k['start_time'])
 
 	def get_events(self, date):
 		events = []

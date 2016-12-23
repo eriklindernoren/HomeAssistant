@@ -22,7 +22,7 @@
 	<div id="alarms"></div>
 
 
-	<img id="status" src="{{ url_for('static', filename='images/microphone.png') }}"></img>
+	<button id="recordButton" onclick="record()"><div class="loader"></div><img id="status" src="{{ url_for('static', filename='images/microphone.png') }}"></img></button>
 
 <!-- 	<div id="forecast">
 		<div class="weather_obj">
