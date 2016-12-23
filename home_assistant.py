@@ -414,10 +414,7 @@ def get_message():
 @app.route('/_handle_text', methods= ['GET'])
 def handle_text():
 	input_text = request.args.get('text', 0, type=str)
-	print input_text
-	alfred._if_wake_alfred(input_text)
-	if alfred.active:
-		alfred._converse(input_text)
+	alfred._converse(input_text)
 	user_message = alfred.get_user_message()
 	ai_message = alfred.get_ai_message()
 	return jsonify(ai_message=ai_message, user_message=user_message)

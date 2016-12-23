@@ -21,8 +21,8 @@
 
 	<div id="alarms"></div>
 
-
-	<button id="recordButton" onclick="record()"><div class="loader"></div><img id="status" src="{{ url_for('static', filename='images/microphone.png') }}"></img></button>
+	<form autocomplete="off"><input placeholder="Message Input" autocomplete="false" type="text"></form>
+	<button id="recordButton" onclick="record()"><img id="status" src="{{ url_for('static', filename='images/microphone.png') }}"></img></button>
 
 <!-- 	<div id="forecast">
 		<div class="weather_obj">

@@ -58,10 +58,9 @@ var updateAIMessage = function(new_message){
 
 var updateStatus = function(status){
 	src = ""
-	$('.loader').css({'display': 'none'});
+	$('#recordButton img').css({'animation': 'none'});
 	if(status == "talking"){
 		var src = $SCRIPT_ROOT + "/static/images/speakers.png";
-		$('#recordButton img').css({'animation': 'none'});
 		$('#recordButton').css({'cursor': 'default'});
 		$('#recordButton').prop('disabled', true);
 	}
@@ -83,6 +82,29 @@ var updateStatus = function(status){
 
 	console.log("Status: " + status);
 }
+
+$('input').keypress(function (e) {
+  if (e.which == 13) {
+  	event.preventDefault();
+    text_input = $(this).val();
+    $(this).val("");
+    console.log(text_input);
+    updateUserMessage(text_input);
+	updateStatus("thinking");
+	var url = $SCRIPT_ROOT + "/_handle_text";
+	$.getJSON(url, {
+        text: text_input,
+      }, function(data) {
+      	console.log("Response: " + data.ai_message);
+      	if(data.ai_message == " - "){
+      		updateStatus("inactive");
+      		return;
+      	}
+      	updateAIMessage(data.ai_message);
+      	speak(data.ai_message);
+      });
+  }
+});
 
 // -------------
 // Google STT 
