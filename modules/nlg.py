@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # nlg.py
 import random
-import datetime
+from datetime import datetime
 from py4j_server import launch_py4j_server
 from py4j.java_gateway import java_import
 
@@ -22,6 +22,7 @@ Tense = gateway.jvm.Tense
 Form = gateway.jvm.Form
 
 date_endings = {
+    "0": "0th",
     "1": "1st",
     "2": "2nd",
     "3": "3rd",
@@ -54,7 +55,7 @@ class NLG(object):
         self.user_name = user_name
         self.last_message = ""
         # make random more random by seeding with time
-        random.seed(datetime.datetime.now())
+        random.seed(datetime.now())
 
     def acknowledge(self):
 
@@ -87,7 +88,7 @@ class NLG(object):
         if choice == 0:
             ret_phrase = random.choice(simple_acknoledgement)
         elif choice == 1:
-            date = datetime.datetime.now()
+            date = datetime.now()
             ret_phrase = "Good %s. What can I do for you?" % self.time_of_day(date)
         else:
             ret_phrase = random.choice(personal_acknowledgement)
@@ -105,6 +106,66 @@ class NLG(object):
             "Some thousand lines of Python code."
         ]
         return random.choice(id_phrases)
+
+    def next_event(self, event):
+        start_phrase = [
+            "Your next scheduled event",
+            "The next event on you calendar",
+            "Your next event is"
+        ]
+        start = random.choice(start_phrase)
+        date = event['date']
+        year = date.split('-')[0]
+        month = date.split('-')[1]
+        day = date.split('-')[2]
+        # If type is a key it is a university event
+        if 'type' in event:
+            if event['location']:
+                response = "%s is a %s at %s on %s %s at %s." % (start, event['type'], event['location'],
+                    months[month],date_endings[day[1]], event['begin'])
+            else:
+                response = "%s is a %s on %s %s at %s." % (start, event['type'], months[month],date_endings[day[1]], event['begin'])
+        else:
+            if event['location']:
+                response = "%s is on %s %s at %s. The title is '%s' and the location is %s." % (start, months[month],date_endings[day[1]], event['begin'],
+                 event['title'], event['location'])
+            else:
+                response = "%s is on %s %s at %s. The event title is '%s'." % (start, months[month], date_endings[day[1]], event['begin'], event['title'])
+        
+        return response
+
+    def events(self, events):
+        no_events = [
+            "You don't seem to have any scheduled events on this day.",
+            "You have no events this day",
+            "You have this day off.",
+            "You have no scheduled obligations this day"
+        ]
+        response = ""
+        if not events:
+            response = random.choice(no_events)
+            return response
+
+        current_date = str(datetime.now()).split(' ')[0]
+
+        n_events = len(events)
+        date = events[0]['date']
+        month = months[date.split('-')[1]]
+        day = date.split('-')[2][0] + date_endings[date.split('-')[2][1]]
+        first_event_begins = events[0]['begin']
+        last_event_ends = events[-1]['end']
+        
+        when = ["have", "is"]
+        if date < current_date:
+            when = ["had", "was"]
+
+        if n_events > 1:
+            response = "You %s %s events scheduled for %s %s, with the first event beginning at %s and the last event ending at %s" % (when[0], n_events, 
+                month, day, first_event_begins, last_event_ends)
+        else:
+            response = "You %s one event scheduled for %s %s. The event %s scheduled between %s and %s." % (when[0], month, day, when[1], first_event_begins, last_event_ends)
+        
+        return response
 
     def searching(self):
         searching_phrases = [
@@ -310,7 +371,7 @@ class NLG(object):
         ret_phrase = ""
 
         if (choice == 0) or (choice == 3): # time related
-            ret_phrase = "Good %s" % self.time_of_day(datetime.datetime.now())
+            ret_phrase = "Good %s" % self.time_of_day(datetime.now())
             if by_name and self.user_name is not None:
                 ret_phrase = "%s %s" % (ret_phrase, self.user_name)
             elif random.randint(0,1) == 0:
@@ -371,11 +432,11 @@ class NLG(object):
 
         if location:
             start = random.choice(post_with_loc)
-            if date < datetime.datetime.now():
+            if date < datetime.now():
                 start = random.choice(pre_with_loc)
         else:
             start = random.choice(post)
-            if date < datetime.datetime.now():
+            if date < datetime.now():
                 start = random.choice(pre)
 
         if request_type == "current":

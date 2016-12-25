@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import sys, os, signal, datetime, threading, logging, time, uuid
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, url_for
 from wit import Wit
 from os import system
-sys.path.insert(0, './Modules')
+sys.path.insert(0, "./modules/")
 from get_data import RemoteData
 from audio_handler import AudioHandler
 from nlg import NLG
+from cal import Calendar
 
 app = Flask(__name__)
 
@@ -23,6 +24,9 @@ class Alfred():
         self.nlg = NLG(user_name=NAME)
         self.remote_data = RemoteData(weather_api_token=DARKSKY_TOKEN)
         self.audio_handler = AudioHandler(debug=True)
+        print "Setting up calendar"
+        self.calendar = Calendar()
+        print "Done."
         self.session_id = uuid.uuid1()
         self.context = {}
         self.ai_message = " - "
@@ -304,6 +308,41 @@ class Alfred():
 
         return context
 
+    def _get_next_event(self, request):
+        entities = request['entities']
+        context = request['context']
+
+        if not self._confident(entities):
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
+
+        event = self.calendar.get_next_event()
+        context = {}
+        context['next_event'] = self.nlg.next_event(event)
+
+        return context
+
+    def _get_events(self, request):
+        entities = request['entities']
+        context = {}
+
+        if not self._confident(entities):
+            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            return context
+
+        datetime = self._first_entity_value(entities, 'datetime')
+
+        if not datetime:
+            context['events_missing'] = "What date do you want me to check?"
+            return context
+
+        date = datetime.split("T")[0]
+
+        events = self.calendar.get_events(date)
+        context['events'] = self.nlg.events(events)
+
+        return context
+
 
     def _identification(self, request):
         entities = request['entities']
@@ -350,7 +389,9 @@ alfred.actions = {
             'getNews': alfred._get_news,
             'identification': alfred._identification,
             'setAlarm': alfred._set_alarm_clock,
-            'manageLights': alfred._manage_lights
+            'manageLights': alfred._manage_lights,
+            'getNextEvent': alfred._get_next_event,
+            'getEvents': alfred._get_events
         }
 
 alfred.client = Wit(access_token=WIT_TOKEN, actions=alfred.actions)  
@@ -363,10 +404,11 @@ def index():
 # Receives the user input => generates response
 @app.route('/_communication', methods= ['GET'])
 def handle_text():
-	input_text = request.args.get('text', 0, type=str)
-	alfred._converse(input_text)
-	ai_message = alfred.get_ai_message()
-	return jsonify(ai_message=ai_message)
+    input_text = request.args.get('text', 0, type=str)
+    print "User message: " + input_text
+    alfred._converse(input_text)
+    ai_message = alfred.get_ai_message()
+    return jsonify(ai_message=ai_message)
 
 if __name__ == "__main__":
 	# Set host address so that the server is accessible network wide

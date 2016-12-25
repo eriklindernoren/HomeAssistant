@@ -36,8 +36,8 @@ class UniversityCalendar(object):
 			end_time = ":".join(str(event.end).split("T")[1].split(":")[0:2])
 			if date not in self.events:
 				self.events[date] = []
-			print "Event - name: %s, location: %s, type: %s, date: %s (%s - %s)" % (name, location, type, date, begin_time, end_time)
-			self.events[date].append({"name": name, "location": location, "type": type, "date": date, "begin": begin_time, "end": end_time})
+			# print "Event - name: %s, location: %s, type: %s, date: %s (%s - %s)" % (name, location, type, date, begin_time, end_time)
+			self.events[date].append({"title": name, "location": location, "type": type, "date": date, "begin": begin_time, "end": end_time})
 
 	def get_events(self, date):
 		event_list = None
