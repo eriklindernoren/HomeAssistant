@@ -1,25 +1,14 @@
-// ------------------------------------------------
-//  				  Speech
-// ------------------------------------------------
+// ----------
+//  Speech
+// ----------
 
-// Let Alfred know whether he's speaking
-var setTalkingStatus = function(value) {
-	var url = $SCRIPT_ROOT + "/_talking";
-	$.getJSON(url, {
-		"talking": value,
-	}, function(data) {
-		console.log("Talking was set to: " + value)
-	});
-}
 
 function voiceStartCallback() {
 	updateStatus("talking");
-	setTalkingStatus(1);
 }
  
 function voiceEndCallback() {
 	updateStatus("inactivated");
-	setTalkingStatus(0);
 }
 
 var speech_parameters = {
@@ -32,9 +21,9 @@ var speak = function(new_message){
 	responsiveVoice.speak(new_message, "UK English Male", speech_parameters);
 }
 
-// ------------------------------------------------
-//  				Visuals
-// ------------------------------------------------
+// ----------
+//  Visuals
+// ----------
 
 var updateAlarms = function(alarms){
 	$("#alarms").empty();
@@ -83,17 +72,18 @@ var updateStatus = function(status){
 	console.log("Status: " + status);
 }
 
-$('input').keypress(function (e) {
-  if (e.which == 13) {
-  	event.preventDefault();
-    text_input = $(this).val();
-    $(this).val("");
-    console.log(text_input);
-    updateUserMessage(text_input);
+// ----------------
+//  Communication
+// ----------------
+
+var sendMessage = function(message){
+	if (!message) return;
+	console.log(message);
+    updateUserMessage(message);
 	updateStatus("thinking");
-	var url = $SCRIPT_ROOT + "/_handle_text";
+	var url = $SCRIPT_ROOT + "/_communication";
 	$.getJSON(url, {
-        text: text_input,
+        text: message,
       }, function(data) {
       	console.log("Response: " + data.ai_message);
       	if(data.ai_message == " - "){
@@ -103,8 +93,17 @@ $('input').keypress(function (e) {
       	updateAIMessage(data.ai_message);
       	speak(data.ai_message);
       });
+}
+
+$('input').keypress(function (e) {
+  if (e.which == 13) {
+  	event.preventDefault();
+    text_input = $(this).val();
+    $(this).val("");
+    sendMessage(text_input);
   }
 });
+
 
 // -------------
 // Google STT 
@@ -123,18 +122,7 @@ var record = function() {
 			console.log(event.results[i]);
 			if (event.results[i].isFinal) {
 				final_transcript = event.results[i][0].transcript;
-				updateUserMessage(final_transcript);
-				updateStatus("thinking");
-				var url = $SCRIPT_ROOT + "/_handle_text";
-				$.getJSON(url, {
-			        text: final_transcript,
-			      }, function(data) {
-			      	console.log("Response: " + data.ai_message);
-			      	if(data.ai_message == " - ") return;
-			      	updateAIMessage(data.ai_message);
-			      	speak(data.ai_message);
-			        final_transcript = "";
-			      });
+				sendMessage(final_transcript);
 			} else {
 				interim_transcript += event.results[i][0].transcript;
 				updateUserMessage(interim_transcript);

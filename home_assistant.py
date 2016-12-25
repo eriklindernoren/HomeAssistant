@@ -20,18 +20,14 @@ NAME = "Erik"
 
 class Alfred():
     def __init__(self):
-        # threading.Thread.__init__(self)
         self.nlg = NLG(user_name=NAME)
         self.remote_data = RemoteData(weather_api_token=DARKSKY_TOKEN)
         self.audio_handler = AudioHandler(debug=True)
         self.session_id = uuid.uuid1()
         self.context = {}
         self.ai_message = " - "
-        self.user_message = " - "
-
         self._active_alarms = []
         
-        self.talking = False    # When Alfred is talking
         self.active = False     # When the user has activated Alfred
 
     def close(self):
@@ -45,10 +41,6 @@ class Alfred():
     def get_alarms(self):
         alarms = self._active_alarms
         return alarms
-
-    def get_user_message(self):
-        message = self.user_message
-        return message
 
     def _active_timeout(self, signum, frame):
         print "Timeout..."
@@ -94,7 +86,6 @@ class Alfred():
         # print "Context:", self.context
         # print "Session-id:", self.session_id
         # print ""
-        self.user_message = message
         new_context = self.client.run_actions(self.session_id, message, self.context)
         self.context = new_context
         print('The session state is now: ' + str(self.context))
@@ -107,7 +98,6 @@ class Alfred():
 
     def _send(self, request, response):
         message = response['text']
-        # if not self.talking and message not in self.context.values():
         self.ai_message = message
         print "Alfred:", message
 
@@ -342,36 +332,9 @@ class Alfred():
         return context
 
 
-    # ---------
-    # START BOT
-    # ---------
-
-    # def run(self):
-        
-
-    #     # Main loop
-    #     while 1:
-    #     	time.sleep(0.5)
-    #         # try:
-	   #         #  if not self.talking:
-	   #         #      input_text = self.audio_handler.get_audio_as_text()
-	   #         #      # input_text = raw_input("Enter message: ") # Testing 
-	   #         #      self._if_wake_alfred(input_text)
-	   #         #      if self.active:
-	   #         #          self.user_message = input_text
-	   #         #          self._converse(input_text)
-	   #         #  else:
-	   #         #      time.sleep(0.2)
-    #         # except Exception as e:
-    #         #     continue
-
-
-# def signal_handler(signal, frame):
-#     print "Killing active Python processes"
-#     os.system("ps ax|grep home_assistant.py|cut -c1-5|xargs kill -9")
-#     sys.exit(0)
-# signal.signal(signal.SIGINT, signal_handler)
-
+# ---------
+# START BOT
+# ---------
 
 alfred = Alfred()
 alfred.actions = {
@@ -392,35 +355,21 @@ alfred.actions = {
 
 alfred.client = Wit(access_token=WIT_TOKEN, actions=alfred.actions)  
 
+# Generate the landing page
 @app.route("/")
 def index():
     return render_template('index.html')
 
-@app.route('/_talking', methods= ['GET'])
-def handle_talking_status():
-    talking = request.args.get('talking', 0, type=int)
-    talking = (talking == 1)
-    alfred.talking = talking
-    return jsonify(success="true")
-
-@app.route('/_messages', methods= ['GET'])
-def get_message():
-    user_message = alfred.get_user_message()
-    ai_message = alfred.get_ai_message()
-    alarms = alfred.get_alarms()
-    return jsonify(ai_message=ai_message, user_message=user_message, alarms=alarms)
-
-
-@app.route('/_handle_text', methods= ['GET'])
+# Receives the user input => generates response
+@app.route('/_communication', methods= ['GET'])
 def handle_text():
 	input_text = request.args.get('text', 0, type=str)
 	alfred._converse(input_text)
-	user_message = alfred.get_user_message()
 	ai_message = alfred.get_ai_message()
-	return jsonify(ai_message=ai_message, user_message=user_message)
+	return jsonify(ai_message=ai_message)
 
 if __name__ == "__main__":
-    # alfred.start()
+	# Set host address so that the server is accessible network wide
     app.run(host='0.0.0.0')
 
 

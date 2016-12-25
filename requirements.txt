@@ -5,3 +5,4 @@ geopy
 SpeechRecognition
 py4j
 pyaudio
+tellcore-py

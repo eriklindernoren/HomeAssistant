@@ -190,16 +190,16 @@ class NLG(object):
 
     def personal_status(self, status_type=None):
         positive_status=[
-            "Can't complain... Literally.",
-            "Never better, and so on.",
-            "I'm doing great",
+            "I can't complain... Literally. I don't have that functionality.",
+            "Never been better.",
+            "I'm doing great.",
             "I'm awesome.",
-            "Can't wait until I can move into my Raspberry Pi."
+            "Incredible!"
         ]
 
         negative_status = [
             "Very busy, sir",
-            "Increadibly bored",
+            "Incredibly bored",
             "I'm not doing well today",
             "I could be much better"
         ]
@@ -395,7 +395,7 @@ class NLG(object):
             summary = forecast_obj['summary'].lower()
             temp_min = forecast_obj['temp_min']
             temp_max = forecast_obj['temp_max']
-            ret_phrase = "%s %s with temperatures between %s and %s degrees." % (start, summary, temp_min, temp_max)
+            ret_phrase = "%s %s With temperatures between %s and %s degrees." % (start, summary, temp_min, temp_max)
 
         return ret_phrase
 
