@@ -8,7 +8,7 @@ function voiceStartCallback() {
 }
  
 function voiceEndCallback() {
-	updateStatus("inactivated");
+	updateStatus("inactive");
 }
 
 var speech_parameters = {
@@ -45,37 +45,44 @@ var updateAIMessage = function(new_message){
 	$("#ai_message").text(new_message);
 }
 
+var inactive = $SCRIPT_ROOT + "/static/images/microphone.png";
+var listening = $SCRIPT_ROOT + "/static/images/microphone-1.png";
+var thinking = $SCRIPT_ROOT + "/static/images/settings.png";
+var talking = $SCRIPT_ROOT + "/static/images/speakers.png";
+var glasses = $SCRIPT_ROOT + "/static/images/eyeglasses.png";
+
+var current_status = "inactive";
 var updateStatus = function(status){
-	src = ""
-	$('#recordButton img').css({'animation': 'none'});
+	$("#inactiveStatus img").attr("src", inactive);
+	$('#activeStatus').css({'animation': 'none'});
+	$("#activeStatus").attr("src", glasses);
+
 	if(status == "talking"){
-		var src = $SCRIPT_ROOT + "/static/images/speakers.png";
-		$('#recordButton').css({'cursor': 'default'});
-		$('#recordButton').prop('disabled', true);
+		$("#activeStatus").attr("src", talking);
 	}
 	else if(status == "thinking"){
-		$('#recordButton img').css({'animation': '2s rotate360 infinite linear'});
-		var src = $SCRIPT_ROOT + "/static/images/settings.png";
-		$('#recordButton').css({'cursor': 'default'});
+		$('#inactiveStatus').css({'display': 'none'});
+		$('#activeStatus').css({'animation': '2s rotate360 infinite linear'});
+		$("#activeStatus").attr("src", thinking);
 	}
 	else if(status == "listening"){
-		var src = $SCRIPT_ROOT + "/static/images/microphone-1.png";
+		$("#inactiveStatus img").attr("src", listening);
 	}
 	else{
-		var src = $SCRIPT_ROOT + "/static/images/microphone.png";
-		$('#recordButton').prop('disabled', false);
-		$('#recordButton').css({'cursor': 'pointer'});
+		$('#inactiveStatus').css({'display':'block'});
 	}
 
-	$("#status").attr("src", src);
-
+	current_status = status;
 	console.log("Status: " + status);
 }
+
+updateStatus(current_status);
 
 // ----------------
 //  Communication
 // ----------------
 
+var previous_response = ""
 var sendMessage = function(message){
 	if (!message) return;
 	console.log(message);
@@ -90,29 +97,39 @@ var sendMessage = function(message){
       		updateStatus("inactive");
       		return;
       	}
-      	updateAIMessage(data.ai_message);
-      	speak(data.ai_message);
+      	if(data.ai_message != previous_response){
+      		updateAIMessage(data.ai_message);
+      		speak(data.ai_message);
+      	}else{
+      		updateStatus("inactive");
+      	}
+      	previous_response = data.ai_message;
       });
 }
 
 $('input').keypress(function (e) {
-  if (e.which == 13) {
-  	event.preventDefault();
-    text_input = $(this).val();
-    $(this).val("");
-    sendMessage(text_input);
-  }
+	  if (e.which == 13) {
+			event.preventDefault();
+			text_input = $(this).val();
+			$(this).val("");
+			sendMessage(text_input);
+	  }
 });
 
 
 // -------------
 // Google STT 
 // -------------
+
 var recognition = new webkitSpeechRecognition();
 recognition.continuous = false;
 recognition.interimResults = true;
-
 var record = function() {
+	if(current_status == "listening"){
+		updateStatus("inactive");
+		recognition.stop();
+		return;
+	}
 	updateStatus("listening");
 	final_transcript = ""
 	interim_transcript = ""

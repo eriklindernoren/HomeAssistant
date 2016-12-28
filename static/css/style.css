@@ -7,13 +7,27 @@ body,html{
 	overflow-y: hidden;
 	position: relative;
 	background-color: white;
+	margin: 0;
 }
 
 button:focus {outline:0;}
 input:focus {outline:0;}
 
+@media screen and (-webkit-min-device-pixel-ratio:0) { 
+  select,
+  textarea,
+  input {
+    font-size: 18px !important;
+  }
+}
+
 ::placeholder{
 	color: rgb(200,200,200);
+}
+
+::selection {
+	background: rgb(200,200,200); /* WebKit/Blink Browsers */
+	color: white;
 }
 
 @font-face {
@@ -103,6 +117,8 @@ input:focus {outline:0;}
 	top: 50%;
 	left: 50%;
 	transform: translateX(-50%) translateY(-50%);
+	width: 800px;
+	max-width: 90%;
 }
 
 #messages p{
@@ -167,17 +183,49 @@ input:focus {outline:0;}
 	position: absolute;
 	bottom: 30px;
 	left: 20px;
-	cursor: pointer;
 	background-color: white;
 	border: 2px solid black;
 	border-radius: 50%;
-	padding: 10px;
 	width: 70px;
 	height: 70px;
+	overflow: hidden;
+}
+
+.status{
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	border: none;
+	transform: translate(-50%,-50%) rotate(0);
+	overflow: hidden;
+}
+
+#inactiveStatus{
+	cursor: pointer;
+	z-index: 2;
+	padding: 10px;
+	background-color: white;
+}
+
+#inactiveStatus img{
+	width: 100%;
+	height: 100%;
+}
+
+#inactiveStatus:hover img{
+	content: url("../images/microphone-1.png");
+}
+
+#activeStatus{
+	z-index: 1;
+	width: 80%;
+	height: 80%;
 }
 
 @keyframes rotate360 {
-  to { transform: rotate(360deg); }
+  to { transform: translate(-50%,-50%) rotate(360deg); }
 }
 
 #status {
@@ -191,6 +239,7 @@ form {
 	left: 50%;
 	bottom: 30px;
 	width: 500px;
+	max-width: 95%;
 	transform: translateX(-50%);
 }
 
@@ -205,5 +254,47 @@ form input {
 input[type="text"]
 {
 	font-family: "Raleway";
-    font-size:18px;
+	font-size: 18px;
+}
+
+@media screen and (max-width: 768px){
+
+	form {
+		bottom: 5px;
+	}
+
+	form input{
+		border: none;
+		border-bottom: 2px solid black;
+	}
+
+	#messages .message{
+		margin-top: 10px;
+		font-size: 16px;
+		line-height: 30px;
+	}
+
+	#messages .message:nth-child(1) {
+		font-size: 20px;
+		line-height: 30px;
+	}
+
+	#recordButton{
+		top: 20px;
+		right: 20px;
+		width: 50px;
+		height: 50px;
+		left: auto;
+		bottom: auto;
+		border: none;
+	}
+
+	#inactiveStatus{
+		display: none !important;
+	}
+
+	#icon{
+		display: none;
+	}
+
 }

@@ -24,14 +24,12 @@ class Alfred():
         self.nlg = NLG(user_name=NAME)
         self.remote_data = RemoteData(weather_api_token=DARKSKY_TOKEN)
         self.audio_handler = AudioHandler(debug=True)
-        print "Setting up calendar"
         self.calendar = Calendar()
-        print "Done."
         self.session_id = uuid.uuid1()
         self.context = {}
+        self.prev_ai_message = ""
         self.ai_message = " - "
         self._active_alarms = []
-        
         self.active = False     # When the user has activated Alfred
 
     def close(self):
@@ -66,6 +64,7 @@ class Alfred():
         if not entities:
             return False
 
+        print entities
         if not "Intent" in entities:
              # Trust that entities confidence is high
             return True
@@ -102,15 +101,17 @@ class Alfred():
 
     def _send(self, request, response):
         message = response['text']
-        self.ai_message = message
-        print "Alfred:", message
+        if message != self.prev_ai_message:
+            self.ai_message = message
+            print "Alfred:", message
+        self.prev_ai_message = message
 
     def _get_forecast(self, request):
         entities = request['entities']
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         weather_request = "currently"
@@ -147,7 +148,7 @@ class Alfred():
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         team = self._first_entity_value(entities, 'team')
@@ -176,7 +177,7 @@ class Alfred():
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         # team = self._first_entity_value(entities, 'team')
@@ -199,7 +200,7 @@ class Alfred():
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         by_name = False
@@ -217,7 +218,7 @@ class Alfred():
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         context = {}
@@ -230,7 +231,7 @@ class Alfred():
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         context = {}
@@ -243,7 +244,7 @@ class Alfred():
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         context = {}
@@ -256,7 +257,7 @@ class Alfred():
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         datetime = self._first_entity_value(entities, 'datetime')
@@ -281,7 +282,7 @@ class Alfred():
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         off_on = self._first_entity_value(entities, 'off_on')
@@ -300,7 +301,7 @@ class Alfred():
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         context = {}
@@ -313,7 +314,7 @@ class Alfred():
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         event = self.calendar.get_next_event()
@@ -327,7 +328,7 @@ class Alfred():
         context = {}
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         datetime = self._first_entity_value(entities, 'datetime')
@@ -349,7 +350,7 @@ class Alfred():
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         context = {}
@@ -362,7 +363,7 @@ class Alfred():
         context = request['context']
 
         if not self._confident(entities):
-            self.ai_message = "I'm sorry. Do you mind repeating that?"
+            self.ai_message = self.nlg.clueless()
             return context
 
         self.active = False

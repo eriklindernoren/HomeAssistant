@@ -1,5 +1,6 @@
 <html>
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 	<link rel="stylesheet" href="{{ url_for('static', filename='weather_icons/iconvault-preview.css') }}">
 	<!-- Raleway -->
@@ -21,8 +22,12 @@
 
 	<div id="alarms"></div>
 
-	<form autocomplete="off"><input placeholder="Write to Alfred" autocomplete="false" type="text"></form>
-	<button id="recordButton" onclick="record()"><img id="status" src="{{ url_for('static', filename='images/microphone.png') }}"></img></button>
+	<form autocomplete="off"><input placeholder="Write to Alfred" autocomplete="false" type="text" x-webkit-speech></form>
+	
+	<div id="recordButton">
+		<button id="inactiveStatus" class="status" onclick="record()"><img src=""></button>
+		<img id="activeStatus" class="status" src=""></img>
+	</div>
 
 <!-- 	<div id="forecast">
 		<div class="weather_obj">

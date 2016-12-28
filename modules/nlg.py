@@ -35,18 +35,18 @@ date_endings = {
 }
 
 months = {
-    "01": "January",
-    "02": "February",
-    "03": "Mars",
-    "04": "April",
-    "05": "May",
-    "06": "June",
-    "07": "July",
-    "08": "August",
-    "09": "September",
-    "10": "October",
-    "11": "November",
-    "12": "December"
+    "01": "january",
+    "02": "february",
+    "03": "mars",
+    "04": "april",
+    "05": "may",
+    "06": "june",
+    "07": "july",
+    "08": "august",
+    "09": "september",
+    "10": "october",
+    "11": "november",
+    "12": "december"
 }
 
 class NLG(object):
@@ -95,6 +95,19 @@ class NLG(object):
 
         return ret_phrase
 
+    def clueless(self):
+        response = [
+            "I'm sorry sir, I don't quite get what you mean by that.",
+            "I don't quite understand what you're refering too.",
+            "Pardon?",
+            "Sorry sir, I don't know what you mean by that.",
+            "Sorry. I don't know what you mean.",
+            "Pardon me sir, what's that?",
+            "Not sure what you mean by that.",
+            "I'm sorry, I don't guite know what you're getting at."
+        ]
+        return random.choice(response)
+
     def identification(self):
         id_phrases = [
             "Alfred. 🤖",
@@ -110,8 +123,9 @@ class NLG(object):
     def next_event(self, event):
         start_phrase = [
             "Your next scheduled event",
-            "The next event on you calendar",
-            "Your next event is"
+            "The next event on your calendar",
+            "Your next event",
+            "The next thing on your schedule"
         ]
         start = random.choice(start_phrase)
         date = event['date']
@@ -139,7 +153,7 @@ class NLG(object):
             "You don't seem to have any scheduled events on this day.",
             "You have no events this day",
             "You have this day off.",
-            "You have no scheduled obligations this day"
+            "You have no scheduled obligations this day."
         ]
         response = ""
         if not events:
@@ -169,14 +183,14 @@ class NLG(object):
 
     def searching(self):
         searching_phrases = [
-            "I'll see what I can find",
+            "I'll see what I can find.",
             "Excuse me while I am reaching for my glasses...",
-            "Hold on a second and let me look it up",
-            "Just a second",
-            "Give me a moment",
-            "Hold on a second",
-            "I'll look that up",
-            "Let me see what I can find"
+            "Hold on a second and let me look it up.",
+            "Just a second.",
+            "Give me a moment.",
+            "Hold on a second.",
+            "I'll look that up.",
+            "Let me see what I can find."
         ]
 
         phrase = random.choice(searching_phrases)
@@ -362,9 +376,9 @@ class NLG(object):
         ]
 
         goofy_greetings = [
-            "Good day to you.",
-            "What's cracking?",
-            "What's up."
+            "Good %s to you." % self.time_of_day(datetime.now()),
+            "Good %s, ol' chap!"% self.time_of_day(datetime.now()),
+            "Hey boy. What's up."
         ]
 
         choice = random.randint(0,4)
@@ -511,8 +525,8 @@ class NLG(object):
 
     def meaning_of_life(self):
         phrases = [
-            "42",
-            "The meaning of life, the universe, and everything else is 42",
+            "42.",
+            "The meaning of life, the universe, and everything else is 42.",
             "Let me look that up for you..... Ok, I found nothing."
         ]
 
@@ -523,8 +537,8 @@ class NLG(object):
 
     def time_of_day(self, date, with_adjective=False):
         ret_phrase = ""
-        if date.hour < 4:
-            ret_phrase = "night"
+        if date.hour < 4 or date.hour >= 18:
+            ret_phrase = "evening"
             if with_adjective:
                 ret_phrase = "%s %s" % ("this", ret_phrase)
         elif date.hour < 10:
@@ -533,10 +547,6 @@ class NLG(object):
                 ret_phrase = "%s %s" % ("this", ret_phrase)
         elif (date.hour >= 10) and (date.hour < 18):
             ret_phrase = "afternoon"
-            if with_adjective:
-                ret_phrase = "%s %s" % ("this", ret_phrase)
-        elif date.hour >= 18:
-            ret_phrase = "evening"
             if with_adjective:
                 ret_phrase = "%s %s" % ("this", ret_phrase)
 
