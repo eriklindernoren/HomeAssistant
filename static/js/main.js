@@ -116,11 +116,9 @@ $('input').keypress(function (e) {
 	  }
 });
 
-
 // -------------
 // Google STT 
 // -------------
-
 var recognition = new webkitSpeechRecognition();
 recognition.continuous = false;
 recognition.interimResults = true;
@@ -150,4 +148,5 @@ var record = function() {
 }
 
 console.log("Loaded main.js");
+
 
