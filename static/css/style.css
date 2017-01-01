@@ -148,14 +148,14 @@ input:focus {outline:0;}
 
 #icon {
 	position: absolute;
-	top: 20px;
+	top: 30px;
 	left: 20px;
-	width: 70px;
+	width: 50px;
 }
 
 #icon p{
 	width: 100%;
-	font-size: 24px;
+	font-size: 16px;
 	text-align: center;
 	margin: 0;
 	z-index: 1;
@@ -264,6 +264,7 @@ input[type="text"]
 	}
 
 	form input{
+		border-radius: 0px;
 		border: none;
 		border-bottom: 2px solid black;
 	}

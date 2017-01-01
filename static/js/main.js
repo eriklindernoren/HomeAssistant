@@ -2,7 +2,6 @@
 //  Speech
 // ----------
 
-
 function voiceStartCallback() {
 	updateStatus("talking");
 }
@@ -16,7 +15,6 @@ var speech_parameters = {
 }
 
 var speak = function(new_message){
-	console.log("New speech: " + new_message);
 	voiceStartCallback();
 	responsiveVoice.speak(new_message, "UK English Male", speech_parameters);
 }
@@ -45,6 +43,7 @@ var updateAIMessage = function(new_message){
 	$("#ai_message").text(new_message);
 }
 
+// States
 var inactive = $SCRIPT_ROOT + "/static/images/microphone.png";
 var listening = $SCRIPT_ROOT + "/static/images/microphone-1.png";
 var thinking = $SCRIPT_ROOT + "/static/images/settings.png";
@@ -71,7 +70,6 @@ var updateStatus = function(status){
 	else{
 		$('#inactiveStatus').css({'display':'block'});
 	}
-
 	current_status = status;
 	console.log("Status: " + status);
 }
@@ -119,32 +117,32 @@ $('input').keypress(function (e) {
 // -------------
 // Google STT 
 // -------------
+
 var recognition = new webkitSpeechRecognition();
 recognition.continuous = false;
 recognition.interimResults = true;
+recognition.onresult = function(event) { 
+	var interim_transcript = '';
+	for (var i = event.resultIndex; i < event.results.length; ++i) {
+		console.log(event.results[i]);
+		if (event.results[i].isFinal) {
+			var final_transcript = event.results[i][0].transcript;
+			sendMessage(final_transcript);
+		} else {
+			interim_transcript += event.results[i][0].transcript;
+			updateUserMessage(interim_transcript);
+		}
+	}
+}
+
 var record = function() {
 	if(current_status == "listening"){
 		updateStatus("inactive");
 		recognition.stop();
-		return;
+	}else{
+		updateStatus("listening");
+		recognition.start();
 	}
-	updateStatus("listening");
-	final_transcript = ""
-	interim_transcript = ""
-	recognition.onresult = function(event) { 
-		var interim_transcript = '';
-		for (var i = event.resultIndex; i < event.results.length; ++i) {
-			console.log(event.results[i]);
-			if (event.results[i].isFinal) {
-				final_transcript = event.results[i][0].transcript;
-				sendMessage(final_transcript);
-			} else {
-				interim_transcript += event.results[i][0].transcript;
-				updateUserMessage(interim_transcript);
-			}
-		}
-	}
-	recognition.start();
 }
 
 console.log("Loaded main.js");
