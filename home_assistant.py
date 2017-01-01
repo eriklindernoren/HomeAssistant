@@ -413,6 +413,6 @@ def handle_text():
 
 if __name__ == "__main__":
 	# Set host address so that the server is accessible network wide
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port="5050")
 
 
