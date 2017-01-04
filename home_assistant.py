@@ -308,12 +308,10 @@ class Alfred():
         room = self._first_entity_value(entities, 'location')
         lamp = self._first_entity_value(entities, 'lamp')
 
-        print "Halo"
-
         context = {}
         if room:
             if room in devices_in_room:
-                context['ligths_confirmation'] = self.nlg.lights_confirmation("room", room, off_on)
+                context['lights_confirmation'] = self.nlg.lights_confirmation("room", room, off_on)
                 for key in devices_in_room[room]:
                     if off_on == "on":
                         devices[key].turn_on()
@@ -454,6 +452,7 @@ def handle_text():
     print "User message: " + input_text
     alfred._converse(input_text)
     ai_message = alfred.get_ai_message()
+    print "AI message: " + ai_message
     return jsonify(ai_message=ai_message)
 
 if __name__ == "__main__":
