@@ -121,6 +121,7 @@ $('input').keypress(function (e) {
 var recognition = new webkitSpeechRecognition();
 recognition.continuous = false;
 recognition.interimResults = true;
+recognition.lang = "en-US";
 recognition.onresult = function(event) { 
 	var interim_transcript = '';
 	for (var i = event.resultIndex; i < event.results.length; ++i) {
