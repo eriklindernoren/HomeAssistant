@@ -9,3 +9,4 @@ tellcore-py
 ics
 pytz
 pyicloud
+pyjokes

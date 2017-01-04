@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import requests, os, json, feedparser, sys, random, urllib2
+import requests, os, json, feedparser, sys, random, urllib2, pyjokes
 from pytz import timezone
 from datetime import datetime, timedelta
 from geopy.geocoders import Nominatim
@@ -65,11 +65,25 @@ class RemoteData(object):
         return {}
 
     def get_random_joke(self):
+        r = random.randint(0,100)
+
+        if r < 50:
+            joke = self.get_other_joke()
+        elif r < 85:
+            joke = self.get_nerdy_joke()
+        else:
+            joke = self.get_norris_joke()
+
+        return joke
+
+    def get_nerdy_joke(self):
+        return pyjokes.get_joke()
+
+    def get_other_joke(self):
         url = "http://tambal.azurewebsites.net/joke/random"
         r = requests.get(url)
         joke_json = json.loads(r.text)
-        joke = joke_json["joke"]
-        return joke
+        return joke_json["joke"]
 
     def get_norris_joke(self):
         url = "https://api.chucknorris.io/jokes/random"
