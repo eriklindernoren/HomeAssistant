@@ -211,7 +211,7 @@ class NLG(object):
         ]
         start = random.choice(affirm)
         if type == "all":
-            return "%s All lights are now turn %s." % (start, off_on)
+            return "%s All lights are now turned %s." % (start, off_on)
         elif type == "room":
             return "%s The lights in the %s are now turned %s." % (start, place, off_on)
         elif type == "lamp":

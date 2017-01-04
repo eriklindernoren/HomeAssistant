@@ -128,9 +128,12 @@ recognition.onresult = function(event) {
 		console.log(event.results[i]);
 		if (event.results[i].isFinal) {
 			var final_transcript = event.results[i][0].transcript;
+			final_transcript = capitalizeFirstLetter(final_transcript);
+			updateUserMessage(final_transcript);
 			sendMessage(final_transcript);
 		} else {
 			interim_transcript += event.results[i][0].transcript;
+			interim_transcript = capitalizeFirstLetter(interim_transcript);
 			updateUserMessage(interim_transcript);
 		}
 	}
@@ -144,6 +147,15 @@ var record = function() {
 		updateStatus("listening");
 		recognition.start();
 	}
+}
+
+
+// -------------
+// Other
+// -------------
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 console.log("Loaded main.js");

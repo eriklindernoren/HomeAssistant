@@ -20,7 +20,7 @@ for device in core.devices():
 devices_in_room = {
     "bedroom": ["sovrum"],
     "living room": ["skrivbord"],
-    "office": ["skrivbord"]
+    "office": ["skrivbord"],
 }
 
 device_translation = {
@@ -43,7 +43,8 @@ class Alfred():
         self.nlg = NLG(user_name=NAME)
         self.remote_data = RemoteData(weather_api_token=DARKSKY_TOKEN)
         self.audio_handler = AudioHandler(debug=True)
-        self.calendar = Calendar()
+        #self.calendar = Calendar()
+        self.calendar = None
         self.session_id = uuid.uuid1()
         self.context = {}
         self.prev_ai_message = ""
@@ -330,6 +331,8 @@ class Alfred():
             else:
                 context['lights_confirmation'] = self.nlg.lights_confirmation("lamp", None, None)
         else:
+            if not off_on:
+                off_on = "on"
             context['lights_confirmation'] = self.nlg.lights_confirmation("all", None, off_on)
             for key in devices.keys():
                 if off_on == "on":
