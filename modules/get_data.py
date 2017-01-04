@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import requests, os, json, feedparser, sys
+import requests, os, json, feedparser, sys, random, urllib2
 from pytz import timezone
 from datetime import datetime, timedelta
 from geopy.geocoders import Nominatim
@@ -63,6 +63,25 @@ class RemoteData(object):
             return {'forecast_type': 'hour', 'location': location, 'summary': summary, 'temperature': temperature} 
         
         return {}
+
+    def get_random_joke(self):
+        url = "http://tambal.azurewebsites.net/joke/random"
+        r = requests.get(url)
+        joke_json = json.loads(r.text)
+        joke = joke_json["joke"]
+        return joke
+
+    def get_norris_joke(self):
+        url = "https://api.chucknorris.io/jokes/random"
+        r = requests.get(url)
+        joke_json = json.loads(r.text)
+        return joke_json["value"]
+
+    def get_momma_joke(self):
+        url = "http://api.yomomma.info"
+        r = requests.get(url)
+        joke_json = json.loads(r.text)
+        return joke_json["joke"]
 
     def get_score(self, game_date, team="Celtics"):
 

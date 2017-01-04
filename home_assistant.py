@@ -43,7 +43,7 @@ class Alfred():
         self.nlg = NLG(user_name=NAME)
         self.remote_data = RemoteData(weather_api_token=DARKSKY_TOKEN)
         self.audio_handler = AudioHandler(debug=True)
-        #self.calendar = Calendar()
+        # self.calendar = Calendar()
         self.calendar = None
         self.session_id = uuid.uuid1()
         self.context = {}
@@ -242,7 +242,9 @@ class Alfred():
             return context
 
         context = {}
-        context['joke'] = self.nlg.joke()
+        # context['joke'] = self.nlg.joke()
+        context['joke'] = self.remote_data.get_random_joke()
+        
 
         return context
 
