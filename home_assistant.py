@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys, os, signal, datetime, threading, logging, time, uuid
 from flask import Flask, render_template, jsonify, request, url_for
+from tellcore.telldus import TelldusCore
 from wit import Wit
 from os import system
 sys.path.insert(0, "./modules/")
@@ -8,6 +9,24 @@ from get_data import RemoteData
 from audio_handler import AudioHandler
 from nlg import NLG
 from cal import Calendar
+
+
+core = TelldusCore()
+
+devices = {}
+for device in core.devices():
+    devices[device.name] = device
+
+devices_in_room = {
+    "bedroom": ["sovrum"],
+    "living room": ["skrivbord"],
+    "office": ["skrivbord"]
+}
+
+device_translation = {
+    "desk lamp": "skrivbord",
+    "bed lamp": "sovrum"
+}
 
 app = Flask(__name__)
 
@@ -287,12 +306,38 @@ class Alfred():
 
         off_on = self._first_entity_value(entities, 'off_on')
         room = self._first_entity_value(entities, 'location')
+        lamp = self._first_entity_value(entities, 'lamp')
+
+        print "Halo"
 
         context = {}
         if room:
-        	context['lights_confirmation'] = "Turning %s the lights in the %s." % (off_on, room)
+            if room in devices_in_room:
+                context['ligths_confirmation'] = self.nlg.lights_confirmation("room", room, off_on)
+                for key in devices_in_room[room]:
+                    if off_on == "on":
+                        devices[key].turn_on()
+                    else:
+                        devices[key].turn_off()
+            else:
+                context['lights_confirmation'] = self.nlg.lights_confirmation("room", None, None)
+        elif lamp:
+            if lamp in device_translation:
+                key = device_translation[lamp]
+                context['lights_confirmation'] = self.nlg.lights_confirmation("lamp", lamp, off_on)
+                if off_on == "on":
+                    devices[key].turn_on()
+                else:
+                    devices[key].turn_off()
+            else:
+                context['lights_confirmation'] = self.nlg.lights_confirmation("lamp", None, None)
         else:
-        	context['lights_confirmation'] = "Turning %s all lights." % off_on
+            context['lights_confirmation'] = self.nlg.lights_confirmation("all", None, off_on)
+            for key in devices.keys():
+                if off_on == "on":
+                    devices[key].turn_on()
+                else:
+                    devices[key].turn_off()
 
         return context
 

@@ -6,11 +6,9 @@ class Calendar(object):
 	def __init__(self):
 		# Fetch updated calendars
 		print "Updating calendars"
-		# self.uni_cal = UniversityCalendar()
-		self.uni_cal = None
+		self.uni_cal = UniversityCalendar()
 		print "\t- University schedule finished"
-		# self.ical = ICalendar()
-		self.ical = None
+		self.ical = ICalendar()
 		print "\t- iCloud calendar finished"
 		print "Done."
 
@@ -28,22 +26,22 @@ class Calendar(object):
 
 	def get_next_event(self):
 		uni_event = self.uni_cal.get_next_event()
-		my_event = self.ical.get_next_event()
+		icloud_event = self.ical.get_next_event()
 		event = None
 		# If there are both uni and personal events scheduled on the same date
 		# => compare when they begin and return the earlies event
-		if uni_event and my_event:
-			if my_event["date"] == uni_event["date"]:
-				if my_event["begin"] <= uni_event['begin']:
-					event = my_event
+		if uni_event and icloud_event:
+			if icloud_event["date"] == uni_event["date"]:
+				if icloud_event["begin"] <= uni_event['begin']:
+					event = icloud_event
 				else:
 					event = uni_event
-			elif my_event["date"] < uni_event["date"]:
-				event = my_event
+			elif icloud_event["date"] < uni_event["date"]:
+				event = icloud_event
 			else:
 				event = uni_event
 		elif uni_event:
 			event = uni_event
-		elif my_event:
-			event = my_event
+		elif icloud_event:
+			event = icloud_event
 		return event

@@ -197,6 +197,26 @@ class NLG(object):
         phrase += " sir." if random.randint(0, 1) == 1 else "."
         return phrase
 
+    def lights_confirmation(self, type, place, off_on):
+        if type == "room" and place == None:
+            return "I'm afraid there doesn't seem to be any lights I can access in that room."
+        elif type == "lamp" and place == None:
+            return "I'm afraid there doesn't seem to be any lamp of that type that I can access."
+
+        affirm = [
+            "Of course sir.",
+            "Certainly sir.",
+            "As you wish sir.",
+            "There we go."
+        ]
+        start = random.choice(affirm)
+        if type == "all":
+            return "%s All lights are now turn %s." % (start, off_on)
+        elif type == "room":
+            return "%s The lights in the %s are now turned %s." % (start, place, off_on)
+        elif type == "lamp":
+            return "%s The %s is now turned %s." % (start, place, off_on)
+
     def user_status(self, type='positive', attribute=None):
 
         ret_phrase = ""
@@ -268,8 +288,8 @@ class NLG(object):
             "I can't complain... Literally. I don't have that functionality.",
             "Never been better.",
             "I'm doing great.",
-            "I'm awesome.",
-            "Incredible!"
+            "Can't complain really. Thanks for asking!",
+            "Incredible! Thank you for asking."
         ]
 
         negative_status = [
@@ -503,13 +523,11 @@ class NLG(object):
 
     def appreciation(self):
         phrases = [
-            "My pleasure, sir.",
+            "My pleasure sir.",
             "You're too kind.",
-            "You're welcome",
-            "Sure, no problem",
-            "Of course",
-            "Don't mention it",
-            "Don't worry about it"
+            "You're very welcome, sir.",
+            "Sure, no problem.",
+            "Of course sir.",
         ]
 
         return random.choice(phrases)
